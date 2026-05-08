@@ -1,15 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public enum playerState
-{
-    Idle,
-    Moving,
-    Mining,
-    Processing,
-    Selling
-}
+using static Define;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterController))]
@@ -25,6 +17,21 @@ public class PlayerController : MonoBehaviour
     private Animator _animator;
     private CharacterController _controller;
     private AudioSource _audioSource;
+
+    private EState _state = EState.None;
+    public EState State
+    {
+        get {return _state; }
+        private set
+        {
+            if (_state == value) return;
+
+            _state = value;
+            UpdateAnimation();
+        }
+    }
+
+    public bool IsServing { get; set; } = false;
 
     private void Awake()
     {
@@ -46,13 +53,26 @@ public class PlayerController : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, _rotateSpeed * Time.deltaTime);
 
-            _animator.SetBool("isMoving", true);
+            State = EState.Move;
         }
         else
         {
-            _animator.SetBool("isMoving", false);
+            State = EState.Idle;
         }
 
         transform.position = new Vector3(transform.position.x, _groundY, transform.position.z);
+    }
+
+    private void UpdateAnimation()
+    {
+        switch (State)
+        {
+            case EState.Idle:
+                _animator.CrossFade(IsServing ? Define.SERVING_IDLE : Define.IDLE, 0.1f);
+                break;
+            case EState.Move:
+                _animator.CrossFade(IsServing ? Define.SERVING_MOVE : Define.MOVE, 0.05f);
+                break;
+        }
     }
 }

@@ -25,8 +25,6 @@ public class UI_Joystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 		_background.transform.position = eventData.position;
 		_cursor.transform.position = eventData.position;
 		_touchPos = eventData.position;
-
-		Debug.Log($"Down");
 	}
 
 	public void OnPointerUp(PointerEventData eventData)
@@ -34,7 +32,6 @@ public class UI_Joystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 		_cursor.transform.position = _touchPos;
 
 		GameManager.Instance.JoystickDir = Vector2.zero;
-		Debug.Log($"Up");
 	}
 
 	public void OnDrag(PointerEventData eventData)
@@ -47,6 +44,5 @@ public class UI_Joystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 		_cursor.transform.position = newPosition;
 
 		GameManager.Instance.JoystickDir = moveDir;
-		Debug.Log($"Drag");
 	}
 }
