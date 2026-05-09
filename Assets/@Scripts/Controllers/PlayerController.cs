@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Inventory Stack")]
     [SerializeField] private PlayerInventoryStack _inventoryStack;
+    [SerializeField] private PlayerInventoryStack _starStack;
+    [SerializeField] private Vector3              _starStackRockOffset = new Vector3(0f, 1f, 0f);
 
     [Header("Tray")]
     [SerializeField] private TrayController _tray;
@@ -45,11 +47,13 @@ public class PlayerController : MonoBehaviour
     public bool IsServing => _tray != null && _tray.HasItems;
 
     public PlayerInventoryStack InventoryStack => _inventoryStack;
+    public PlayerInventoryStack StarStack      => _starStack;
     public TrayController       Tray           => _tray;
 
-    private bool  _isOnWorkGround = false;
-    private float _mineTimer      = 0f;
-    private float _mineClipLength = 0.5f;
+    private bool    _isOnWorkGround         = false;
+    private float   _mineTimer              = 0f;
+    private float   _mineClipLength         = 0.5f;
+    private Vector3 _starStackDefaultLocal;
 
     // ──────────────────────────────────────────────
 
@@ -73,13 +77,26 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (_starStack != null)
+            _starStackDefaultLocal = _starStack.transform.localPosition;
+
         if (_inventoryStack != null)
             _inventoryStack.OnStackChanged += count =>
+            {
                 GameManager.Instance.Inventory.SetCount(_inventoryStack.ItemType, count);
+                if (_starStack != null)
+                    _starStack.transform.localPosition = count > 0
+                        ? _starStackDefaultLocal + _starStackRockOffset
+                        : _starStackDefaultLocal;
+            };
 
         if (_tray != null)
             _tray.OnCountChanged += count =>
                 GameManager.Instance.Inventory.SetCount(InventoryItemType.Spade, count);
+
+        if (_starStack != null)
+            _starStack.OnStackChanged += count =>
+                GameManager.Instance.Inventory.SetCount(InventoryItemType.Star, count);
     }
 
     private void Update()

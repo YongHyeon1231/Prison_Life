@@ -6,7 +6,7 @@ using UnityEngine;
 /// 플레이어가 현재 소지한 아이템 수량 및 프리팹을 관리합니다.
 /// GameManager.Instance.Inventory 를 통해서만 접근합니다.
 /// </summary>
-public enum InventoryItemType { Rock, Spade }
+public enum InventoryItemType { Rock, Spade, Star }
 
 public class InventoryManager
 {
@@ -23,6 +23,20 @@ public class InventoryManager
     {
         _counts[type] = count;
         OnCountChanged?.Invoke(type, count);
+    }
+
+    public void Add(InventoryItemType type, int amount)
+    {
+        int next = GetCount(type) + amount;
+        SetCount(type, next);
+    }
+
+    public bool Spend(InventoryItemType type, int amount)
+    {
+        int current = GetCount(type);
+        if (current < amount) return false;
+        SetCount(type, current - amount);
+        return true;
     }
 
     public void RegisterPrefab(InventoryItemType type, GameObject prefab) =>

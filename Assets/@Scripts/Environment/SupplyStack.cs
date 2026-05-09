@@ -28,7 +28,6 @@ public class SupplyStack : AnimatedPile
 
     private void DispenseToPlayer(PlayerController player)
     {
-        Debug.Log($"[SupplyStack] DispenseToPlayer 호출 — ObjectCount={ObjectCount}, Tray={player.Tray}");
 
         TrayController tray = player.Tray;
 

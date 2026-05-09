@@ -96,6 +96,17 @@ public class PlayerInventoryStack : MonoBehaviour
             });
     }
 
+    /// <summary>외부에서 날아온 아이템을 애니메이션 없이 스택에 바로 편입합니다.</summary>
+    public void AddToStack(Transform item)
+    {
+        if (IsFull) { Destroy(item.gameObject); return; }
+
+        item.SetParent(transform);
+        _items.Add(item);
+        item.DOPunchScale(Vector3.one * 0.015f, 0.25f, 1, 0.5f);
+        OnStackChanged?.Invoke(ItemCount);
+    }
+
     /// <summary>스택 최상단 아이템을 꺼내 반환합니다.</summary>
     public GameObject TakeItem()
     {

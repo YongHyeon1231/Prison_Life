@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// 게스트 스폰 · 대기열 · 서빙 · 별 보상을 통합 관리합니다.
 ///
 /// Inspector 연결
 ///   _guestPrefab   : GuestController 프리팹
+///   _spawnPoint    : 게스트 스폰 위치 Transform
 ///   _waitPoints    : 대기 위치를 가진 Waypoints (인덱스 0이 맨 앞)
 ///   _itemPlace     : Counter의 TrayToItemPlacePile
 ///   _starPile      : GetStar 오브젝트의 AnimatedPile
@@ -19,6 +21,9 @@ public class GuestManager : MonoBehaviour
     [SerializeField] private GuestController _guestPrefab;
 
     [Header("References")]
+    [SerializeField] private Transform           _spawnPoint;
+    [SerializeField] private Transform           _guestContainer;
+    [SerializeField] private Transform           _guestWaitPoint;
     [SerializeField] private Waypoints           _waitPoints;
     [SerializeField] private TrayToItemPlacePile _itemPlace;
     [SerializeField] private AnimatedPile        _starPile;
@@ -27,7 +32,6 @@ public class GuestManager : MonoBehaviour
     [SerializeField] private float _spawnInterval    = 3f;
     [SerializeField] private float _serveJumpPower   = 6f;
     [SerializeField] private float _serveJumpDuration = 0.3f;
-    [SerializeField] private float _exitDistance     = 8f;
 
     private readonly List<GuestController> _queue = new();
     private bool _isServing = false;
@@ -39,6 +43,11 @@ public class GuestManager : MonoBehaviour
         if (_guestPrefab == null)
         {
             Debug.LogError("[GuestManager] _guestPrefab이 Inspector에 연결되지 않았습니다.");
+            return;
+        }
+        if (_spawnPoint == null)
+        {
+            Debug.LogError("[GuestManager] _spawnPoint가 Inspector에 연결되지 않았습니다.");
             return;
         }
         if (_waitPoints == null)
@@ -70,12 +79,21 @@ public class GuestManager : MonoBehaviour
             if (_queue.Count >= _waitPoints.GetPointCount())
                 continue;
 
-            // 맨 뒤 웨이포인트 위치에서 스폰
-            int backIndex = _waitPoints.GetPointCount() - 1;
-            GuestController guest = Instantiate(_guestPrefab,
-                _waitPoints.GetPoint(backIndex).position,
-                Quaternion.identity);
+            Vector3 spawnPos = _spawnPoint.position;
 
+            if (!NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+            {
+                Debug.LogWarning("[GuestManager] 스폰 위치 근처에 NavMesh가 없습니다.");
+                continue;
+            }
+            spawnPos = hit.position;
+
+            GuestController guest = Instantiate(_guestPrefab, spawnPos, _spawnPoint.rotation, _guestContainer);
+            guest.gameObject.SetActive(true);
+
+            yield return null; // NavMeshAgent가 NavMesh에 스냅될 때까지 한 프레임 대기
+
+            int backIndex = _waitPoints.GetPointCount() - 1;
             guest.CurrentQueueIndex = backIndex;
             guest.SetDestination(_waitPoints.GetPoint(backIndex).position);
             _queue.Add(guest);
@@ -158,22 +176,12 @@ public class GuestManager : MonoBehaviour
         for (int i = 0; i < count * 2; i++)
             _starPile.AddItem();
 
-        // 큐에서 제거 후 퇴장
+        // 큐에서 제거 후 WaitPoint로 이동
         _queue.RemoveAt(0);
 
-        Vector3 exitPos = guest.transform.position + guest.transform.forward * _exitDistance;
-        guest.SetDestination(exitPos);
-
-        // 퇴장 후 오브젝트 정리
-        StartCoroutine(CoDestroyAfterLeave(guest, exitPos));
+        guest.WalkToWaitPoint(_guestWaitPoint.position, _guestWaitPoint.rotation);
 
         _isServing = false;
         TryServe();
-    }
-
-    private IEnumerator CoDestroyAfterLeave(GuestController guest, Vector3 exitPos)
-    {
-        yield return new WaitUntil(() => guest.HasArrived);
-        Destroy(guest.gameObject);
     }
 }

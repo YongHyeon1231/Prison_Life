@@ -25,6 +25,10 @@ public static class Define
     public static int GUEST_IDLE = Animator.StringToHash("Guest_Idle");
     public static int GUEST_MOVE = Animator.StringToHash("Guest_Move");
 
+    // Camp 전용 애니메이션
+    public static int CAMP_DOOR_OPEN  = Animator.StringToHash("Camp_Door_Open");
+    public static int CAMP_DOOR_CLOSE = Animator.StringToHash("Camp_Door_Close");
+
     public enum EGuestState
     {
         None,

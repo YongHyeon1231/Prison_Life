@@ -6,13 +6,14 @@ using static Define;
 [RequireComponent(typeof(NavMeshAgent))]
 public class GuestController : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed   = 2f;
-    [SerializeField] private float _rotateSpeed = 360f;
+    [SerializeField] private float      _moveSpeed   = 2f;
+    [SerializeField] private float      _rotateSpeed = 360f;
+    [SerializeField] private GameObject _guestSpade;
 
     private Animator       _animator;
     private NavMeshAgent   _agent;
     private UI_OrderBubble _orderBubble;
-    private GameObject     _guestSpade;
+    private Quaternion?    _arrivalFacing = null;
 
     private bool _hasDestination = false;
 
@@ -48,14 +49,14 @@ public class GuestController : MonoBehaviour
         _animator    = GetComponent<Animator>();
         _agent       = GetComponent<NavMeshAgent>();
         _orderBubble = GetComponentInChildren<UI_OrderBubble>(true);
-        _guestSpade  = Utils.FindChild(gameObject, "GuestSpade", recursive: true);
 
         _agent.speed                 = _moveSpeed;
         _agent.stoppingDistance      = 0.05f;
-        _agent.radius                = 0.1f;
-        _agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+        _agent.radius                = 0.3f;
+        _agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
 
         if (_orderBubble) _orderBubble.gameObject.SetActive(false);
+        else Debug.LogWarning($"[GuestController] UI_OrderBubble을 찾지 못했습니다. 프리팹 하위에 컴포넌트가 있는지 확인하세요.", this);
         if (_guestSpade)  _guestSpade.SetActive(false);
     }
 
@@ -67,6 +68,12 @@ public class GuestController : MonoBehaviour
         {
             _agent.isStopped = true;
             State = EGuestState.Idle;
+
+            if (_arrivalFacing.HasValue)
+            {
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation, _arrivalFacing.Value, _rotateSpeed * Time.deltaTime);
+            }
         }
         else
         {
@@ -74,7 +81,7 @@ public class GuestController : MonoBehaviour
             State = EGuestState.Move;
         }
 
-        transform.position = new Vector3(transform.position.x, 0f, transform.position.z);
+
     }
 
     // ── 애니메이션 ────────────────────────────────────────────
@@ -90,9 +97,22 @@ public class GuestController : MonoBehaviour
 
     // ── 공개 API ──────────────────────────────────────────────
 
+    public void WalkToWaitPoint(Vector3 pos, Quaternion facing)
+    {
+        _arrivalFacing = facing;
+        SetDestination(pos);
+    }
+
     public void SetDestination(Vector3 pos)
     {
-        _hasDestination  = true;
+        _hasDestination = true;
+        if (!_agent.isOnNavMesh)
+        {
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+                _agent.Warp(hit.position);
+            else
+                return;
+        }
         _agent.isStopped = false;
         _agent.SetDestination(pos);
     }
