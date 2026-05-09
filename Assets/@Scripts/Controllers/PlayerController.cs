@@ -17,8 +17,11 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon Level (1~3)")]
     [SerializeField] [Range(1, 3)] private int _weaponLevel = 1;
 
-    [Header("Rock Pile")]
-    [SerializeField] private RockPile _rockPile;
+    [Header("Inventory Stack")]
+    [SerializeField] private PlayerInventoryStack _inventoryStack;
+
+    [Header("Tray")]
+    [SerializeField] private TrayController _tray;
 
     // ──────────────────────────────────────────────
 
@@ -38,13 +41,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public bool IsServing { get; set; } = false;
+    // 트레이에 아이템이 하나라도 있으면 Serving 상태
+    public bool IsServing => _tray != null && _tray.HasItems;
+
+    public PlayerInventoryStack InventoryStack => _inventoryStack;
+    public TrayController       Tray           => _tray;
 
     private bool  _isOnWorkGround = false;
     private float _mineTimer      = 0f;
     private float _mineClipLength = 0.5f;
-
-    public int MinedRockCount => _rockPile != null ? _rockPile.ItemCount : 0;
 
     // ──────────────────────────────────────────────
 
@@ -67,23 +72,20 @@ public class PlayerController : MonoBehaviour
                 break;
             }
         }
+
+        if (_inventoryStack != null)
+            _inventoryStack.OnStackChanged += count =>
+                GameManager.Instance.Inventory.SetCount(_inventoryStack.ItemType, count);
+
+        if (_tray != null)
+            _tray.OnCountChanged += count =>
+                GameManager.Instance.Inventory.SetCount(InventoryItemType.Spade, count);
     }
 
     private void Update()
     {
         HandleMovement();
         UpdateState();
-    }
-
-    // ──────────────────────────────────────────────
-    //  Helpers
-    // ──────────────────────────────────────────────
-
-    private Vector3 GetMoveDir()
-    {
-        Vector2 joy = GameManager.Instance.JoystickDir;
-        Vector3 dir = new(joy.x, 0, joy.y);
-        return (Quaternion.Euler(0, 45, 0) * dir).normalized;
     }
 
     // ──────────────────────────────────────────────
@@ -106,23 +108,33 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(transform.position.x, _groundY, transform.position.z);
     }
 
+    private Vector3 GetMoveDir()
+    {
+        Vector2 joy = GameManager.Instance.JoystickDir;
+        return (Quaternion.Euler(0, 45, 0) * new Vector3(joy.x, 0, joy.y)).normalized;
+    }
+
     // ──────────────────────────────────────────────
     //  State Machine
     // ──────────────────────────────────────────────
 
     private void UpdateState()
     {
-        bool isMoving = GetMoveDir() != Vector3.zero;
-        bool isMining = _isOnWorkGround && _mineTimer > 0f;
-
         _mineTimer -= Time.deltaTime;
 
-        State = (isMining, isMoving) switch
+        bool isMoving  = GetMoveDir() != Vector3.zero;
+        bool isServing = IsServing;
+        // 트레이에 아이템이 있으면 채굴 상태 진입 불가
+        bool isMining  = _isOnWorkGround && _mineTimer > 0f && !isServing;
+
+        State = (isMining, isServing, isMoving) switch
         {
-            (true,  true)  => EState.Move_Mine,
-            (true,  false) => EState.Mine,
-            (false, true)  => EState.Move,
-            _              => EState.Idle,
+            (true,  _,     true)  => EState.Move_Mine,
+            (true,  _,     false) => EState.Mine,
+            (_,     true,  true)  => EState.Serving_Move,
+            (_,     true,  false) => EState.Serving_Idle,
+            (_,     _,     true)  => EState.Move,
+            _                     => EState.Idle,
         };
     }
 
@@ -130,18 +142,12 @@ public class PlayerController : MonoBehaviour
     {
         switch (State)
         {
-            case EState.Idle:
-                _animator.CrossFade(IsServing ? SERVING_IDLE : IDLE, 0.1f);
-                break;
-            case EState.Move:
-                _animator.CrossFade(IsServing ? SERVING_MOVE : MOVE, 0.05f);
-                break;
-            case EState.Mine:
-                _animator.CrossFade(MINE, 0.1f);
-                break;
-            case EState.Move_Mine:
-                _animator.CrossFade(MOVE_MINE, 0.05f);
-                break;
+            case EState.Idle:         _animator.CrossFade(IDLE,         0.1f);  break;
+            case EState.Move:         _animator.CrossFade(MOVE,         0.05f); break;
+            case EState.Serving_Idle: _animator.CrossFade(SERVING_IDLE, 0.1f);  break;
+            case EState.Serving_Move: _animator.CrossFade(SERVING_MOVE, 0.05f); break;
+            case EState.Mine:         _animator.CrossFade(MINE,         0.1f);  break;
+            case EState.Move_Mine:    _animator.CrossFade(MOVE_MINE,    0.05f); break;
         }
     }
 
@@ -168,8 +174,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnRockMined()
     {
-        if (_rockPile != null) _rockPile.AddRock();
+        // 트레이에 아이템이 있으면 채굴 불가
+        if (IsServing) return;
 
+        if (_inventoryStack != null) _inventoryStack.AddItem();
         _mineTimer = _mineClipLength;
 
         bool isMoving   = GetMoveDir() != Vector3.zero;

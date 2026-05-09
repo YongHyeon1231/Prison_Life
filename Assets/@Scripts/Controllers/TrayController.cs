@@ -1,102 +1,122 @@
-using DG.Tweening;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using UnityEngine;
 
+/// <summary>
+/// 플레이어가 소지한 트레이 위에 아이템을 쌓는 컨트롤러.
+/// - 아이템이 하나라도 있으면 MeshRenderer를 활성화합니다.
+/// - 아이템이 모두 없어지면 MeshRenderer를 비활성화합니다.
+/// - OnCountChanged 이벤트로 외부(InventoryManager 등)와 동기화합니다.
+/// </summary>
+[RequireComponent(typeof(MeshRenderer))]
 public class TrayController : MonoBehaviour
 {
-	[SerializeField]
-	private Vector2 _shakeRange = new Vector2(0.8f, 0.4f);
+    [Header("Stack")]
+    [SerializeField] private float _itemHeight   = 0.5f;
+    [SerializeField] private float _jumpPower    = 5f;
+    [SerializeField] private float _jumpDuration = 0.3f;
 
-	[SerializeField]
-	private float _bendFactor = 0.1f;
+    [Header("Bend")]
+    [SerializeField] private Vector2 _shakeRange = new(0.8f, 0.4f);
+    [SerializeField] private float   _bendFactor = 0.1f;
 
-	[SerializeField]
-	private float _itemHeight = 0.5f;
+    public int  ItemCount  => _items.Count;
+    public int  TotalCount => _reserved.Count + _items.Count;
+    public bool HasItems   => TotalCount > 0;
 
-	public int ItemCount => _items.Count; // Tary 위에 들고 있는 아이템 갯수
-	public int ReservedCount => _reserved.Count; // Tary 위로 이동중
-	public int TotalItemCount => _reserved.Count + _items.Count; // Tary 위로 이동중인 아이템을 포함한 전체 개수
+    /// <summary>확정 아이템 수(예약 제외)가 바뀔 때 발행됩니다.</summary>
+    public event Action<int> OnCountChanged;
 
-	private HashSet<Transform> _reserved = new HashSet<Transform>();
-	private List<Transform> _items = new List<Transform>();
+    private MeshRenderer _meshRenderer;
 
-	private void Start()
-	{
-		StartCoroutine(CoTestBurger());
-	}
+    private readonly HashSet<Transform> _reserved = new();
+    private readonly List<Transform>    _items    = new();
 
-	// TEST
-	public GameObject prefab;
+    private void Awake()
+    {
+        _meshRenderer = GetComponent<MeshRenderer>();
+        SetVisible(false);
+    }
 
-	// TEST
-	IEnumerator CoTestBurger()
-	{
-		for (int i = 0; i < 20; i++)
-		{
-			yield return new WaitForSeconds(0.1f);
+    // ── Update : 스택 휨 ──────────────────────────────────────
 
-			GameObject go = GameObject.Instantiate(prefab);
-			AddToTray(go.transform);
-		}
+    private void Update()
+    {
+        if (_items.Count == 0) return;
 
-		yield return null;
-	}
+        Vector3 dir     = GameManager.Instance.JoystickDir;
+        Vector3 moveDir = (Quaternion.Euler(0, 45, 0) * new Vector3(dir.x, 0, dir.y)).normalized;
 
-	private void Update()
-	{
-		if (_items.Count == 0)
-			return;
+        _items[0].SetPositionAndRotation(transform.position, transform.rotation);
 
-		Vector3 dir = GameManager.Instance.JoystickDir;
-		Vector3 moveDir = new Vector3(dir.x, 0, dir.y);
-		moveDir = (Quaternion.Euler(0, 45, 0) * moveDir).normalized;
+        for (int i = 1; i < _items.Count; i++)
+        {
+            float rate = Mathf.Lerp(_shakeRange.x, _shakeRange.y, i / (float)_items.Count);
 
-		_items[0].position = transform.position;
-		_items[0].rotation = transform.rotation;
+            Vector3    pos = _items[i - 1].position + _items[i - 1].up * _itemHeight;
+            Quaternion rot = Quaternion.Lerp(_items[i].rotation, _items[i - 1].rotation, rate);
 
-		for (int i = 1; i < _items.Count; i++)
-		{
-			float rate = Mathf.Lerp(_shakeRange.x, _shakeRange.y, i / (float)_items.Count);
+            if (moveDir != Vector3.zero)
+            {
+                Vector3 axis = Vector3.Cross(moveDir, Vector3.up).normalized;
+                rot = Quaternion.AngleAxis(i * _bendFactor * rate, axis) * rot;
+            }
 
-			_items[i].position =  Vector3.Lerp(_items[i].position, _items[i - 1].position + (_items[i - 1].up * _itemHeight), rate);
-			_items[i].rotation = Quaternion.Lerp(_items[i].rotation, _items[i - 1].rotation, rate);
+            _items[i].SetPositionAndRotation(
+                Vector3.Lerp(_items[i].position, pos, rate),
+                rot);
+        }
+    }
 
-			if (moveDir != Vector3.zero)
-			{
-				// _items[i].rotation *= Quaternion.Euler(-i * _bendFactor * rate, 0, 0);
-				// 월드 공간에서 이동 방향에 수직인 축을 구해 아이템 Y rotation과 무관하게 뒤로 휘도록 적용
-				Vector3 worldTiltAxis = Vector3.Cross(moveDir, Vector3.up).normalized;
-				float bendAngle = i * _bendFactor * rate;
-				_items[i].rotation = Quaternion.AngleAxis(bendAngle, worldTiltAxis) * _items[i].rotation;
-			}
-		}
-	}
+    // ── 공개 API ──────────────────────────────────────────────
 
-	public void AddToTray(Transform child)
-	{
-		_reserved.Add(child);
+    /// <summary>
+    /// 외부 오브젝트를 트레이 위로 DOJump 이동시켜 적재합니다.
+    /// 첫 아이템 수신 시 트레이 Mesh를 자동으로 표시합니다.
+    /// </summary>
+    public void ReceiveItem(GameObject item)
+    {
+        SetVisible(true);
 
-		Vector3 dest = transform.position + Vector3.up * TotalItemCount * _itemHeight;
+        Transform t = item.transform;
+        _reserved.Add(t);
 
-		child.DOJump(dest, 5, 1, 0.3f)
-			.OnComplete(() =>
-			{
-				_reserved.Remove(child);
-				_items.Add(child);
-			});
-	}
+        Vector3 dest = transform.position + Vector3.up * TotalCount * _itemHeight;
 
-	public Transform RemoveFromTray()
-	{
-		if (ItemCount == 0)
-			return null;
+        t.DOJump(dest, _jumpPower, 1, _jumpDuration)
+            .OnComplete(() =>
+            {
+                _reserved.Remove(t);
+                _items.Add(t);
+                t.SetParent(transform);
+                t.rotation = Quaternion.identity;
+                OnCountChanged?.Invoke(ItemCount);
+            });
+    }
 
-		Transform item = _items.Last();
+    /// <summary>트레이 최상단 아이템을 꺼내 반환합니다.</summary>
+    public GameObject TakeItem()
+    {
+        if (_items.Count == 0) return null;
 
-		_items.Remove(item);
+        Transform t = _items.Last();
+        _items.RemoveAt(_items.Count - 1);
+        t.SetParent(null);
 
-		return item;
-	}
+        if (_reserved.Count == 0 && _items.Count == 0)
+            SetVisible(false);
+
+        OnCountChanged?.Invoke(ItemCount);
+        return t.gameObject;
+    }
+
+    // ── 내부 ─────────────────────────────────────────────────
+
+    private void SetVisible(bool visible)
+    {
+        if (_meshRenderer != null)
+            _meshRenderer.enabled = visible;
+    }
 }
