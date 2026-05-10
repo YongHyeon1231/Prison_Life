@@ -29,10 +29,22 @@ public static class Define
     public static int CAMP_DOOR_OPEN  = Animator.StringToHash("Camp_Door_Open");
     public static int CAMP_DOOR_CLOSE = Animator.StringToHash("Camp_Door_Close");
 
+    // MineShop 전용 애니메이션
+    public static int MINE_SHOP_FIRST_OPEN  = Animator.StringToHash("MineShop_First_Open");
+    public static int MINE_SHOP_FULL_AMOUNT = Animator.StringToHash("MineShop_FullAmount");
+
     public enum EGuestState
     {
         None,
         Idle,   // 대기 중
         Move,   // 이동 중
+    }
+
+    public enum ResourceType
+    {
+        Star,
+        Wood,
+        Rock,
+        Gold,
     }
 }
