@@ -10,16 +10,16 @@ public class UI_PlayerLevelUpArea : UI_ConstructionArea
 
     protected override void OnComplete(PlayerController player)
     {
-        bool shouldFinalize = _isUpgraded;
-        _isUpgraded = true;
+        if (!_isUpgraded)
+        {
+            _isUpgraded = true;
 
-        base.OnComplete(player);
+            if (_mineShopAnimator != null)
+                _mineShopAnimator.Play(MINE_SHOP_FULL_AMOUNT);
 
-        if (!shouldFinalize) return;
-
-        if (_mineShopAnimator != null)
-            _mineShopAnimator.Play(MINE_SHOP_FULL_AMOUNT);
-
-        gameObject.SetActive(false);
+            base.OnComplete(player); // 무기 업그레이드 + 필 리셋
+        }
+        // 두 번째 완료: base 미호출 → _isComplete = true, _progress = 1 유지
+        // fillAmount가 가득 찬 채로 상호작용 완전 차단
     }
 }

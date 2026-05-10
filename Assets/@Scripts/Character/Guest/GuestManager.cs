@@ -172,8 +172,8 @@ public class GuestManager : MonoBehaviour
         // 게스트 서빙 완료
         guest.OnServed();
 
-        // 별 보상 : 받은 수량 × 2
-        for (int i = 0; i < count * 2; i++)
+        // 별 보상 : 받은 수량 × 7
+        for (int i = 0; i < count * 7; i++)
             _starPile.AddItem();
 
         // 큐에서 제거 후 WaitPoint로 이동

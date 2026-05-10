@@ -14,7 +14,7 @@ public abstract class AnimatedStackBase : MonoBehaviour
 
     [Header("Bend")]
     [SerializeField] protected Vector2 _shakeRange = new(0.8f, 0.4f);
-    [SerializeField] protected float   _bendFactor = 0.1f;
+    [SerializeField] protected float   _bendFactor = 0.05f;
 
     public int ItemCount  => _items.Count;
     public int TotalCount => _items.Count + _reserved.Count;

@@ -47,4 +47,10 @@ public static class Define
         Rock,
         Gold,
     }
+
+    public enum WorkerType
+    {
+        Mining,
+        Counter,
+    }
 }

@@ -27,6 +27,19 @@ public class Rock : MonoBehaviour
     /// <summary>채굴 가능한 상태인지 여부 (비활성 = false)</summary>
     public bool IsAvailable => gameObject.activeSelf;
 
+    private int _hitCount = 0;
+
+    /// <summary>
+    /// Worker가 한 번 Mine할 때 호출합니다.
+    /// requiredHits 횟수에 도달하면 true를 반환합니다 (이때 Mine() 호출).
+    /// </summary>
+    public bool TryHit(int requiredHits = 2)
+    {
+        if (!IsAvailable) return false;
+        _hitCount++;
+        return _hitCount >= requiredHits;
+    }
+
     /// <summary>스폰/리스폰 기준 위치 (RockPool 이 설정)</summary>
     public Vector3 OriginPosition { get; set; }
 
@@ -53,6 +66,7 @@ public class Rock : MonoBehaviour
     /// <summary>RockPool 이 호출 — 원래 위치에 다시 활성화합니다.</summary>
     public void Respawn()
     {
+        _hitCount          = 0;
         transform.position = OriginPosition;
         transform.rotation = Quaternion.identity;
         gameObject.SetActive(true);

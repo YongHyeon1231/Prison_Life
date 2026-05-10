@@ -13,6 +13,7 @@ public class PlayerInventoryStack : AnimatedStackBase
     [SerializeField] private InventoryItemType _itemType = InventoryItemType.Rock;
 
     private GameObject _itemPrefab;
+    private Transform  _container;
 
     [Header("Stack Limit")]
     [SerializeField] private bool _unlimited = false;
@@ -31,6 +32,12 @@ public class PlayerInventoryStack : AnimatedStackBase
         _itemPrefab = GameManager.Instance.Inventory.GetPrefab(_itemType);
         if (_itemPrefab == null)
             Debug.LogWarning($"[PlayerInventoryStack] {_itemType} 프리팹이 GameManager에 등록되지 않았습니다.");
+
+        // Rock·Star 아이템을 씬 루트 ##PlayerInventory 하위로 모아 Hierarchy를 정리합니다.
+        GameObject existingGO = GameObject.Find("##PlayerInventory");
+        _container = existingGO != null
+            ? existingGO.transform
+            : new GameObject("##PlayerInventory").transform;
     }
 
     // ── 공개 API ──────────────────────────────────────────────
@@ -41,6 +48,7 @@ public class PlayerInventoryStack : AnimatedStackBase
         if (_itemPrefab == null || IsFull) return;
 
         Transform item = Instantiate(_itemPrefab).transform;
+        item.SetParent(_container);
         _reserved.Add(item);
 
         Vector3 dest = transform.position + Vector3.up * TotalCount * _itemHeight;
@@ -60,7 +68,7 @@ public class PlayerInventoryStack : AnimatedStackBase
     {
         if (IsFull) { Destroy(item.gameObject); return; }
 
-        item.SetParent(transform);
+        item.SetParent(_container);
         _items.Add(item);
         item.DOPunchScale(Vector3.one * 0.015f, 0.25f, 1, 0.5f);
         OnStackChanged?.Invoke(ItemCount);

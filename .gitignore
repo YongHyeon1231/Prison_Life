@@ -68,6 +68,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+# Claude Code agent team session artifacts
+.claude/work-session/
+
 # Unity build cache
 [Bb]ee/
 [Aa]rtifacts/
