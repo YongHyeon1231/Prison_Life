@@ -39,10 +39,10 @@ public class MiningWorkerController : BaseCharacterController
 
     private void Start()
     {
-        MiningArea area = FindObjectOfType<MiningArea>();
+        MiningArea area = InteractionManager.Instance.MiningArea;
         if (area == null)
         {
-            Debug.LogWarning("[MiningWorkerController] 씬에 MiningArea 컴포넌트가 없습니다.");
+            Debug.LogWarning("[MiningWorkerController] InteractionManager에 MiningArea가 설정되지 않았습니다.");
             return;
         }
 

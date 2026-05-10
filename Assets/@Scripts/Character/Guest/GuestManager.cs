@@ -28,6 +28,9 @@ public class GuestManager : MonoBehaviour
     [SerializeField] private TrayToItemPlacePile _itemPlace;
     [SerializeField] private AnimatedPile        _starPile;
 
+    [Header("Camp")]
+    [SerializeField] private CampController _campController;
+
     [Header("Settings")]
     [SerializeField] private float _spawnInterval    = 3f;
     [SerializeField] private float _serveJumpPower   = 6f;
@@ -141,6 +144,7 @@ public class GuestManager : MonoBehaviour
         if (front.RequiredCount == 0) return;
         if (!front.HasArrived) return;
         if (_itemPlace.ObjectCount < front.RequiredCount) return;
+        if (_campController != null && _campController.IsAtCapacity && _campController.IsOverflowFull) return;
 
         _isServing = true;
         StartCoroutine(CoServe(front));
@@ -176,10 +180,13 @@ public class GuestManager : MonoBehaviour
         for (int i = 0; i < count * 7; i++)
             _starPile.AddItem();
 
-        // 큐에서 제거 후 WaitPoint로 이동
+        // 큐에서 제거 후 캠프 or 오버플로우로 이동
         _queue.RemoveAt(0);
 
-        guest.WalkToWaitPoint(_guestWaitPoint.position, _guestWaitPoint.rotation);
+        if (_campController != null && _campController.IsAtCapacity)
+            _campController.TryRouteToOverflow(guest);
+        else
+            guest.WalkToWaitPoint(_guestWaitPoint.position, _guestWaitPoint.rotation);
 
         _isServing = false;
         TryServe();

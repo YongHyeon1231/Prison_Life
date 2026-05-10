@@ -1,32 +1,42 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using static Define;
 
-/// <summary>
-/// @Camp 루트에 붙이는 컨트롤러.
-///
-/// Inspector 연결
-///   _animator          : @Camp의 Animator
-///   _doorInteraction   : 문 트리거의 GuestInteraction
-///   _campSpots         : 캠프 내부 자리 Waypoints
-///   _campIdleFacingY   : 캠프 내 Idle 시 바라볼 방향 Y 회전값 (문 쪽 각도 입력)
-///   _countText         : 현재 인원 / 최대 인원 표시 TMP
-///   _maxCapacity       : 최대 수용 인원 (캠프 레벨 업 시 SetMaxCapacity 호출)
-/// </summary>
+[Serializable]
+public class CampUpgradeTierEffect
+{
+    public List<GameObject> objectsToActivate;
+    public Transform        wallToMove;
+    public Vector3          wallTargetPos;
+    public Waypoints        nextCampSpots;
+}
+
 public class CampController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Animator         _animator;
-    [SerializeField] private GuestInteraction _doorInteraction;
-    [SerializeField] private Waypoints        _campSpots;
-    [SerializeField] private float             _campIdleFacingY;
-    [SerializeField] private TextMeshProUGUI  _countText;
+    [SerializeField] private Animator            _animator;
+    [SerializeField] private Waypoints           _campSpots;
+    [SerializeField] private float               _campIdleFacingY;
+    [SerializeField] private TextMeshProUGUI     _countText;
+    [SerializeField] private CutsceneController  _cutsceneController;
+
+    [Header("Overflow")]
+    [SerializeField] private Waypoints _overflowSpots;
+
+    [Header("Upgrade Tier Effects (index 0 = 10→20, 1 = 20→30)")]
+    [SerializeField] private List<CampUpgradeTierEffect> _upgradeTiers;
 
     [Header("Settings")]
-    [SerializeField] private int _maxCapacity = 11;
+    [SerializeField] private int _maxCapacity = 10;
 
+    private GuestInteraction  _doorInteraction;
     private GuestController[] _spotOccupants;
+    private GuestController[] _overflowOccupants;
     private GuestController   _lastDoorGuest;
+    private bool              _fullCutsceneFired;
+    private int               _upgradeIndex;
 
     private int GuestCount
     {
@@ -39,12 +49,28 @@ public class CampController : MonoBehaviour
         }
     }
 
+    public int  MaxCapacity  => _maxCapacity;
+    public bool IsAtCapacity => GuestCount >= _maxCapacity;
+    public bool IsOverflowFull
+    {
+        get
+        {
+            if (_overflowOccupants == null || _overflowOccupants.Length == 0) return true;
+            foreach (var g in _overflowOccupants)
+                if (g == null) return false;
+            return true;
+        }
+    }
+
     // ── 초기화 ────────────────────────────────────────────────────
 
     private void Start()
     {
-        _animator = GetComponent<Animator>();
-        _spotOccupants = new GuestController[_campSpots.GetPointCount()];
+        _animator          = GetComponent<Animator>();
+        _spotOccupants     = new GuestController[_campSpots.GetPointCount()];
+        int overflowCount  = _overflowSpots != null ? _overflowSpots.GetPointCount() : 0;
+        _overflowOccupants = new GuestController[overflowCount];
+        _doorInteraction   = InteractionManager.Instance.CampDoorGuestZone;
         _doorInteraction.OnEntered += OnGuestAtDoor;
         UpdateText();
     }
@@ -75,6 +101,13 @@ public class CampController : MonoBehaviour
 
         AssignSpot(guest);
         UpdateText();
+
+        if (!_fullCutsceneFired && GuestCount >= _maxCapacity)
+        {
+            _fullCutsceneFired = true;
+            if (_cutsceneController != null)
+                _cutsceneController.PlayCampFull();
+        }
     }
 
     public void OnGuestExitedFloor(GuestController guest)
@@ -84,12 +117,77 @@ public class CampController : MonoBehaviour
         UpdateText();
     }
 
-    // ── 레벨업 ────────────────────────────────────────────────────
+    // ── 오버플로우 ────────────────────────────────────────────────
 
-    public void SetMaxCapacity(int capacity)
+    public bool TryRouteToOverflow(GuestController guest)
     {
-        _maxCapacity = capacity;
+        for (int i = 0; i < _overflowOccupants.Length; i++)
+        {
+            if (_overflowOccupants[i] != null) continue;
+            _overflowOccupants[i] = guest;
+            guest.ShowNoSpace();
+            Quaternion facing = Quaternion.Euler(0f, _campIdleFacingY, 0f);
+            guest.WalkToWaitPoint(_overflowSpots.GetPoint(i).position, facing);
+            return true;
+        }
+        return false;
+    }
+
+    // ── 업그레이드 ────────────────────────────────────────────────
+
+    public void Upgrade()
+    {
+        int[] tiers = { 10, 20, 30 };
+        for (int i = 0; i < tiers.Length - 1; i++)
+        {
+            if (_maxCapacity != tiers[i]) continue;
+            _maxCapacity = tiers[i + 1];
+            break;
+        }
+
+        ApplyUpgradeTierEffect();
+
+        _fullCutsceneFired = false;
         UpdateText();
+
+        for (int i = 0; i < _overflowOccupants.Length; i++)
+        {
+            if (_overflowOccupants[i] == null) continue;
+            GuestController g = _overflowOccupants[i];
+            _overflowOccupants[i] = null;
+            g.HideNoSpace();
+            g.SetDestination(_campSpots.GetPoint(0).position);
+        }
+    }
+
+    private void ApplyUpgradeTierEffect()
+    {
+        if (_upgradeTiers == null || _upgradeIndex >= _upgradeTiers.Count)
+        {
+            _upgradeIndex++;
+            return;
+        }
+
+        CampUpgradeTierEffect effect = _upgradeTiers[_upgradeIndex];
+
+        if (effect.objectsToActivate != null)
+            foreach (var obj in effect.objectsToActivate)
+                if (obj != null) obj.SetActive(true);
+
+        if (effect.wallToMove != null)
+            effect.wallToMove.localPosition = effect.wallTargetPos;
+
+        if (effect.nextCampSpots != null)
+        {
+            _campSpots = effect.nextCampSpots;
+            // 기존 occupants 유지하면서 배열 확장
+            var old = _spotOccupants;
+            _spotOccupants = new GuestController[_campSpots.GetPointCount()];
+            for (int i = 0; i < old.Length && i < _spotOccupants.Length; i++)
+                _spotOccupants[i] = old[i];
+        }
+
+        _upgradeIndex++;
     }
 
     // ── 자리 관리 ─────────────────────────────────────────────────
@@ -135,13 +233,13 @@ public class CampController : MonoBehaviour
     private void MoveGuestToSlot(GuestController guest, int slot)
     {
         Quaternion facing = Quaternion.Euler(0f, _campIdleFacingY, 0f);
-
         guest.WalkToWaitPoint(_campSpots.GetPoint(slot).position, facing);
     }
 
     private int FindEmptySlot()
     {
-        for (int i = 0; i < _spotOccupants.Length; i++)
+        int limit = Mathf.Min(_maxCapacity, _spotOccupants.Length);
+        for (int i = 0; i < limit; i++)
             if (_spotOccupants[i] == null) return i;
         return -1;
     }

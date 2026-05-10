@@ -6,6 +6,7 @@ using static Define;
 public class GuestController : BaseCharacterController
 {
     [SerializeField] private GameObject _guestSpade;
+    [SerializeField] private GameObject _noSpaceBillboard;
 
     private NavMeshAgent   _agent;
     private UI_OrderBubble _orderBubble;
@@ -51,9 +52,10 @@ public class GuestController : BaseCharacterController
         _agent.radius                = 0.3f;
         _agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
 
-        if (_orderBubble) _orderBubble.gameObject.SetActive(false);
+        if (_orderBubble)       _orderBubble.gameObject.SetActive(false);
         else Debug.LogWarning($"[GuestController] UI_OrderBubble을 찾지 못했습니다. 프리팹 하위에 컴포넌트가 있는지 확인하세요.", this);
-        if (_guestSpade)  _guestSpade.SetActive(false);
+        if (_guestSpade)        _guestSpade.SetActive(false);
+        if (_noSpaceBillboard)  _noSpaceBillboard.SetActive(false);
     }
 
     // ── Update ────────────────────────────────────────────────
@@ -131,6 +133,9 @@ public class GuestController : BaseCharacterController
         if (_guestSpade)  _guestSpade.SetActive(true);
         RequiredCount = 0;
     }
+
+    public void ShowNoSpace() { if (_noSpaceBillboard) _noSpaceBillboard.SetActive(true); }
+    public void HideNoSpace() { if (_noSpaceBillboard) _noSpaceBillboard.SetActive(false); }
 
     // ── 내부 ─────────────────────────────────────────────────
 

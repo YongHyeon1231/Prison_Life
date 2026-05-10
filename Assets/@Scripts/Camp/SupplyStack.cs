@@ -19,7 +19,7 @@ public class SupplyStack : AnimatedPile
     {
         _itemPrefab = GameManager.Instance.Inventory.GetPrefab(InventoryItemType.Spade);
 
-        PlayerInteraction interaction = GetComponentInParent<PlayerInteraction>();
+        PlayerInteraction interaction = InteractionManager.Instance.SupplyPlayerZone;
         interaction.InteractInterval    = _dispenseInterval;
         interaction.OnInteraction = DispenseToPlayer;
     }

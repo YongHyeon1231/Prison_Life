@@ -13,12 +13,11 @@ public class Counter : MonoBehaviour
 
     private void Start()
     {
-        PlayerInteraction desk =
-            Utils.FindChild<PlayerInteraction>(gameObject, "InfoDesk_Input", recursive: true);
+        PlayerInteraction desk = InteractionManager.Instance.InfoDeskPlayerZone;
 
         if (desk == null)
         {
-            Debug.LogWarning("[Counter] InfoDesk_Info에서 PlayerInteraction을 찾을 수 없습니다.");
+            Debug.LogWarning("[Counter] InteractionManager에 InfoDeskPlayerZone이 설정되지 않았습니다.");
             return;
         }
 

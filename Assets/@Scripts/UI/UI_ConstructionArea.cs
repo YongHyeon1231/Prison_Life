@@ -35,15 +35,18 @@ public class UI_ConstructionArea : UI_BaseConstructionArea
                 _flyDuration);
     }
 
-    protected override void OnComplete(PlayerController player)
+    protected void ResetFill()
     {
-        player.UpgradeWeaponLevel();
-
         _requiredAmount = _upgradedAmount;
         _progress       = 0f;
         _isComplete     = false;
-
         if (_fillImage != null) _fillImage.fillAmount = 0f;
         if (_costText  != null) _costText.text = _requiredAmount.ToString();
+    }
+
+    protected override void OnComplete(PlayerController player)
+    {
+        player.UpgradeWeaponLevel();
+        ResetFill();
     }
 }

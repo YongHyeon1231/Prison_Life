@@ -12,9 +12,43 @@ public class CutsceneController : MonoBehaviour
     [SerializeField] private Vector3 _mineShopCamTarget = new(-4.28f, 6.5f, -9.10f);
     [SerializeField] private float   _camMoveDuration   = 1.5f;
 
+    [Header("Camp Full Cutscene")]
+    [SerializeField] private Vector3    _campCamTarget       = new(-13.6f, 6.5f, -11.83f);
+    [SerializeField] private GameObject _campUpgradeArea;
+    [SerializeField] private float      _campFullDelay       = 2f;
+    [SerializeField] private float      _campCamMoveDuration = 1.5f;
+    [SerializeField] private float      _campCamWaitDuration = 7f;
+
     public void PlayMineShopOpen(PlayerController player)
     {
         StartCoroutine(CoMineShopOpen(player));
+    }
+
+    public void PlayCampFull()
+    {
+        StartCoroutine(CoCampFull());
+    }
+
+    private IEnumerator CoCampFull()
+    {
+        PlayerController player = GameManager.Instance.Player;
+        if (player != null) player.SetLocked(true);
+
+        yield return new WaitForSeconds(_campFullDelay);
+
+        bool camReady = false;
+        _cameraController.MoveCameraXZ(_campCamTarget, _campCamMoveDuration, () => camReady = true);
+        yield return new WaitUntil(() => camReady);
+
+        if (_campUpgradeArea != null) _campUpgradeArea.SetActive(true);
+
+        yield return new WaitForSeconds(_campCamWaitDuration);
+
+        bool camBack = false;
+        _cameraController.ReturnToFollow(_campCamMoveDuration, () => camBack = true);
+        yield return new WaitUntil(() => camBack);
+
+        if (player != null) player.SetLocked(false);
     }
 
     private IEnumerator CoMineShopOpen(PlayerController player)

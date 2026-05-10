@@ -6,7 +6,7 @@ public class UI_JoystickManager : MonoBehaviour
     [SerializeField] private GameObject _joystickIdle;
     [SerializeField] private GameObject _uiJoystick;
 
-    private const float IDLE_TIMEOUT = 5.0f;
+    private const float IDLE_TIMEOUT = 10.0f;
     private Coroutine _idleCoroutine;
 
     private void Start()
