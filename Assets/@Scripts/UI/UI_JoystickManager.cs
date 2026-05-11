@@ -6,11 +6,16 @@ public class UI_JoystickManager : MonoBehaviour
     [SerializeField] private GameObject _joystickIdle;
     [SerializeField] private GameObject _uiJoystick;
 
-    private const float IDLE_TIMEOUT = 10.0f;
+    private UI_Joystick _joystick;
     private Coroutine _idleCoroutine;
+    private const float IDLE_TIMEOUT = 10.0f;
 
     private static bool _isBlocked;
-    public static void SetBlocked(bool blocked) => _isBlocked = blocked;
+    public static void SetBlocked(bool blocked)
+    {
+        _isBlocked = blocked;
+        UI_Joystick.SetBlocked(blocked);
+    }
 
     private void Start()
     {
@@ -21,24 +26,18 @@ public class UI_JoystickManager : MonoBehaviour
         }
 
         _joystickIdle.SetActive(true);
-        _uiJoystick.SetActive(false);
+        _uiJoystick.SetActive(true);
+
+        _joystick = _uiJoystick.GetComponentInChildren<UI_Joystick>(true);
     }
 
     private void Update()
     {
-        if (_isBlocked)
+        bool blocked = _isBlocked || (GameManager.Instance.Player != null && GameManager.Instance.Player.IsLocked);
+        if (blocked)
         {
-            if (_uiJoystick.activeSelf) DeactivateJoystick();
-            GameManager.Instance.JoystickDir = Vector2.zero;
-            CancelIdleTimer();
-            return;
-        }
-
-        PlayerController player = GameManager.Instance.Player;
-        if (player != null && player.IsLocked)
-        {
-            if (_uiJoystick.activeSelf) DeactivateJoystick();
-            CancelIdleTimer();
+            if (_joystick != null) _joystick.ForceDeactivate();
+            ShowIdle();
             return;
         }
 
@@ -46,35 +45,25 @@ public class UI_JoystickManager : MonoBehaviour
 
         if (hasInput)
         {
-            if (!_uiJoystick.activeSelf)
-                ActivateJoystick();
-
+            _joystickIdle.SetActive(false);
             CancelIdleTimer();
         }
         else
         {
-            if (_uiJoystick.activeSelf && _idleCoroutine == null)
+            if (_idleCoroutine == null && !_joystickIdle.activeSelf)
                 _idleCoroutine = StartCoroutine(IdleCountdown());
         }
     }
 
-    private void ActivateJoystick()
+    private void ShowIdle()
     {
-        _joystickIdle.SetActive(false);
-        _uiJoystick.SetActive(true);
-    }
-
-    private void DeactivateJoystick()
-    {
-        _uiJoystick.SetActive(false);
+        CancelIdleTimer();
         _joystickIdle.SetActive(true);
     }
 
     private void CancelIdleTimer()
     {
-        if (_idleCoroutine == null)
-            return;
-
+        if (_idleCoroutine == null) return;
         StopCoroutine(_idleCoroutine);
         _idleCoroutine = null;
     }
@@ -82,7 +71,7 @@ public class UI_JoystickManager : MonoBehaviour
     private IEnumerator IdleCountdown()
     {
         yield return new WaitForSeconds(IDLE_TIMEOUT);
-        DeactivateJoystick();
+        _joystickIdle.SetActive(true);
         _idleCoroutine = null;
     }
 }
