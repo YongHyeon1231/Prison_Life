@@ -38,6 +38,7 @@ public class GetStarInteraction : MonoBehaviour
             .OnComplete(() =>
             {
                 starStack.AddToStack(star.transform);
+                GameManager.Instance.Sound.Play(Define.SoundType.GetStar);
 
                 if (!_firstStarTriggered && _cutsceneController != null)
                 {

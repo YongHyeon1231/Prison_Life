@@ -63,6 +63,8 @@ public class CutsceneController : MonoBehaviour
             foreach (var obj in _campUpgradeReturnObjects)
                 if (obj != null) obj.SetActive(true);
 
+        GameManager.Instance.Sound.Play(SoundType.OpenAD);
+
         if (player != null) player.SetLocked(false);
     }
 

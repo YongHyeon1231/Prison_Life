@@ -53,4 +53,18 @@ public static class Define
         Mining,
         Counter,
     }
+
+    public enum SoundType
+    {
+        GetStar,
+        GuestGetItem,
+        ItemPutDown,
+        Mine1,
+        Mine2,
+        OpenAD,
+        PotDownRock,
+        GetOnSpade,
+        Purchase,
+        MachineSound,
+    }
 }

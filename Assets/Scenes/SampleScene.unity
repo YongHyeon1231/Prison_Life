@@ -533,7 +533,7 @@ Transform:
   m_GameObject: {fileID: 41052896}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.005341515, y: -0.13229182, z: 0}
+  m_LocalPosition: {x: 0.82, y: 1.491, z: -1.154}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2227,6 +2227,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 169578929}
+  - component: {fileID: 169578930}
   m_Layer: 5
   m_Name: BottomIcon
   m_TagString: Untagged
@@ -2254,6 +2255,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -257}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &169578930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169578928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d0e5b11442149248835ac393947832e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _url: https://github.com/YongHyeon1231/Prison_Life
 --- !u!1 &175995951
 GameObject:
   m_ObjectHideFlags: 0
@@ -7718,7 +7732,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 782888292}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 169578930}
+        m_TargetAssemblyTypeName: UI_LinkButton, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &782888292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14903,6 +14929,7 @@ GameObject:
   - component: {fileID: 1355495912}
   - component: {fileID: 1355495913}
   - component: {fileID: 1355495914}
+  - component: {fileID: 1355495915}
   m_Layer: 0
   m_Name: '@GameManager'
   m_TagString: Untagged
@@ -14941,6 +14968,7 @@ MonoBehaviour:
   _rockPrefab: {fileID: 6606184059284731036, guid: 1f4d2a5beb991c64b9df17da7c5ffc49, type: 3}
   _spadePrefab: {fileID: 1703410571461156582, guid: d53a85d6096fda5479d28c4ef9a0a5d5, type: 3}
   _player: {fileID: 0}
+  _soundManager: {fileID: 1355495915}
   _miningWorkerPrefab: {fileID: 4414194066226099065, guid: 5c70a753cee2e534896e937b3b788d31, type: 3}
   _counterWorkerPrefab: {fileID: 6881965232595024833, guid: 4b391547bd17ad04b83c0d33090051aa, type: 3}
 --- !u!114 &1355495914
@@ -14966,6 +14994,19 @@ MonoBehaviour:
   _spawnInterval: 3
   _serveJumpPower: 6
   _serveJumpDuration: 0.3
+--- !u!114 &1355495915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355495911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1caf180991cf224ab764fabf69b2871, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _audioSource: {fileID: 7848518942895884166}
 --- !u!1 &1357951370
 GameObject:
   m_ObjectHideFlags: 0
@@ -16904,6 +16945,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1540949149}
+  - component: {fileID: 1540949151}
+  - component: {fileID: 1540949150}
   m_Layer: 5
   m_Name: Sound
   m_TagString: Untagged
@@ -16929,9 +16972,79 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 116, y: 118.900024}
+  m_AnchoredPosition: {x: 87.2, y: 102.3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1540949150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540949148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a40b22f01cce5041ab583adc424add7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _soundOnObject: {fileID: 1786390573}
+  _soundOffObject: {fileID: 2101882500}
+--- !u!114 &1540949151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540949148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 0
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 0}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1540949150}
+        m_TargetAssemblyTypeName: UI_SoundToggle, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1543460285
 GameObject:
   m_ObjectHideFlags: 0
@@ -17191,8 +17304,6 @@ MonoBehaviour:
   - zone: {fileID: 21736658}
     arrowAnchor: {fileID: 1015143429}
   _arrowPrefab: {fileID: 5617703308125935419, guid: ac2f2e97af82e0f4ca91cccd8da9f619, type: 3}
-  _compass: {fileID: 2101660784}
-  _compassShowDistance: 5
 --- !u!4 &1573895984
 Transform:
   m_ObjectHideFlags: 0
@@ -18245,7 +18356,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -41, y: -17}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1786390575
@@ -21366,7 +21477,7 @@ Transform:
   m_GameObject: {fileID: 2101660783}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27731067, y: -0.6504605, z: 0.6504605, w: 0.27731067}
-  m_LocalPosition: {x: -2.494, y: 1.244, z: -0.81}
+  m_LocalPosition: {x: 0, y: -1.2, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -21408,7 +21519,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -41, y: -17}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2101882502
@@ -26963,6 +27074,7 @@ GameObject:
   - component: {fileID: 7848518942895884164}
   - component: {fileID: 7848518942895884166}
   - component: {fileID: 7848518942895884165}
+  - component: {fileID: 7848518942895884167}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -27117,6 +27229,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7848518942895884167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7848518942895884162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c35fd11e566bdf34c9e13fc4e0da797c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _visual: {fileID: 2101660783}
+  _hideDistance: 5
 --- !u!1 &7869220850516939754
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,12 +11,16 @@ public class GameManager : Singleton<GameManager>
     [Header("Player")]
     [SerializeField] private PlayerController _player;
 
+    [Header("Managers")]
+    [SerializeField] private SoundManager _soundManager;
+
     [Header("Worker Prefabs")]
     [SerializeField] private GameObject _miningWorkerPrefab;
     [SerializeField] private GameObject _counterWorkerPrefab;
 
     public Vector2          JoystickDir { get; set; } = Vector2.zero;
     public PlayerController Player      => _player;
+    public SoundManager     Sound       => _soundManager;
 
     public ResourceManager Resource  { get; } = new ResourceManager();
     public InventoryManager Inventory { get; } = new InventoryManager();

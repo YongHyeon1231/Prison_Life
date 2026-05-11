@@ -34,5 +34,6 @@ public class Counter : MonoBehaviour
         if (item == null) return;
 
         _itemPlace.ReceiveItem(item);
+        GameManager.Instance.Sound.Play(Define.SoundType.ItemPutDown);
     }
 }

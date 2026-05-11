@@ -52,7 +52,8 @@ public class Spade_MachineController : MachineController
 
     protected override void OnStateEnter(MachineState state)
     {
-        // 필요 시 사운드, 이펙트 등 추가
+        if (state == MachineState.Running)
+            GameManager.Instance.Sound.Play(Define.SoundType.MachineSound);
     }
 
     protected override void OnStateExit(MachineState state)

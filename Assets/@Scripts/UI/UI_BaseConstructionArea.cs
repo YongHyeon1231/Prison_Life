@@ -32,12 +32,14 @@ public abstract class UI_BaseConstructionArea : MonoBehaviour
         GameObject item = player.TakeResourceItem(_requiredResource);
         if (item == null) return;
 
+        GameManager.Instance.Sound.Play(SoundType.ItemPutDown);
         _progress = Mathf.Clamp01(_progress + 1f / _requiredAmount);
         OnProgressStep(1f / _requiredAmount, _progress, item);
 
         if (_progress >= 1f)
         {
             _isComplete = true;
+            GameManager.Instance.Sound.Play(SoundType.Purchase);
             OnComplete(player);
         }
     }

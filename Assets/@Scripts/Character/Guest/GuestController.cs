@@ -131,6 +131,7 @@ public class GuestController : BaseCharacterController
     {
         if (_orderBubble) _orderBubble.gameObject.SetActive(false);
         if (_guestSpade)  _guestSpade.SetActive(true);
+        GameManager.Instance.Sound.Play(SoundType.GuestGetItem);
         RequiredCount = 0;
     }
 

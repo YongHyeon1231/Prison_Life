@@ -33,5 +33,6 @@ public class MachineStandInput : MonoBehaviour
         if (item == null) return;
 
         _pile.ReceiveItem(item);
+        GameManager.Instance.Sound.Play(Define.SoundType.PotDownRock);
     }
 }

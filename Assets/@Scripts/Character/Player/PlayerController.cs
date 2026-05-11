@@ -213,6 +213,7 @@ public class PlayerController : BaseCharacterController
         }
 
         _mineTimer = _mineClipLength;
+        GameManager.Instance.Sound.Play(_weaponLevel == 1 ? SoundType.Mine1 : SoundType.Mine2);
 
         bool isMoving   = GetMoveDir() != Vector3.zero;
         int  targetHash = isMoving ? MOVE_MINE : MINE;

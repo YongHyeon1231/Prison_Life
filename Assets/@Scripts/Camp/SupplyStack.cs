@@ -35,5 +35,6 @@ public class SupplyStack : AnimatedPile
         if (item == null) return;
 
         tray.ReceiveItem(item, _dispenseJumpPower, _dispenseJumpDuration);
+        GameManager.Instance.Sound.Play(Define.SoundType.GetOnSpade);
     }
 }
