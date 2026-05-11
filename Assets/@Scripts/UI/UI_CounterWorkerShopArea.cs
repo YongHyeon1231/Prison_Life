@@ -30,6 +30,9 @@ public class UI_CounterWorkerShopArea : UI_BaseConstructionArea
     [SerializeField] private WorkerType _workerType = WorkerType.Counter;
     [SerializeField] private Transform  _spawnPoint;
 
+    [Header("Tutorial")]
+    [SerializeField] private bool _completesTutorialStep;
+
     protected override void Start()
     {
         base.Start();
@@ -52,6 +55,7 @@ public class UI_CounterWorkerShopArea : UI_BaseConstructionArea
     protected override void OnComplete(PlayerController player)
     {
         SpawnWorker();
+        if (_completesTutorialStep && TutorialGuide.Instance != null) TutorialGuide.Instance.CompleteCurrentStep();
         StartCoroutine(DeactivateAfterDelay(0.5f));
     }
 

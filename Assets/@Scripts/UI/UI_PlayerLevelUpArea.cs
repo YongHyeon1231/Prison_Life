@@ -6,6 +6,9 @@ public class UI_PlayerLevelUpArea : UI_ConstructionArea
     [Header("Level Up")]
     [SerializeField] private Animator _mineShopAnimator;
 
+    [Header("Tutorial")]
+    [SerializeField] private bool _completesTutorialStep;
+
     private bool _isUpgraded = false;
 
     protected override void OnComplete(PlayerController player)
@@ -22,6 +25,7 @@ public class UI_PlayerLevelUpArea : UI_ConstructionArea
         else
         {
             player.UpgradeWeaponLevel();
+            if (_completesTutorialStep && TutorialGuide.Instance != null) TutorialGuide.Instance.CompleteCurrentStep();
             gameObject.SetActive(false);
         }
     }

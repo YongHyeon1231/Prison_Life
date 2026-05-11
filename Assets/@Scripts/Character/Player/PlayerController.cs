@@ -206,10 +206,12 @@ public class PlayerController : BaseCharacterController
         if (_inventoryStack != null && _inventoryStack.IsFull)
         {
             if (_uiMax != null) _uiMax.SetActive(true);
-            return;
+        }
+        else
+        {
+            if (_inventoryStack != null) _inventoryStack.AddItem();
         }
 
-        if (_inventoryStack != null) _inventoryStack.AddItem();
         _mineTimer = _mineClipLength;
 
         bool isMoving   = GetMoveDir() != Vector3.zero;

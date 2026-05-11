@@ -32,6 +32,9 @@ public class UI_WorkerPurchaseArea : UI_BaseConstructionArea
     [Header("Chain")]
     [SerializeField] private GameObject _nextShop;
 
+    [Header("Tutorial")]
+    [SerializeField] private bool _completesTutorialStep;
+
     protected override void Start()
     {
         base.Start();
@@ -55,6 +58,7 @@ public class UI_WorkerPurchaseArea : UI_BaseConstructionArea
     protected override void OnComplete(PlayerController player)
     {
         SpawnWorkers();
+        if (_completesTutorialStep && TutorialGuide.Instance != null) TutorialGuide.Instance.CompleteCurrentStep();
         StartCoroutine(DeactivateAfterDelay(0.5f));
     }
 
