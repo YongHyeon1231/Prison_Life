@@ -177,10 +177,18 @@ public class CampController : MonoBehaviour
             break;
         }
 
-        ApplyUpgradeTierEffect();
-
         _fullCutsceneFired = false;
         UpdateText();
+
+        if (_cutsceneController != null)
+            _cutsceneController.PlayCampUpgrade(OnUpgradeCutsceneComplete);
+        else
+            OnUpgradeCutsceneComplete();
+    }
+
+    private void OnUpgradeCutsceneComplete()
+    {
+        ApplyUpgradeTierEffect();
 
         for (int i = 0; i < _overflowOccupants.Length; i++)
         {

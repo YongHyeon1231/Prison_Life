@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using static Define;
 
@@ -19,6 +21,17 @@ public class CutsceneController : MonoBehaviour
     [SerializeField] private float      _campCamMoveDuration = 1.5f;
     [SerializeField] private float      _campCamWaitDuration = 7f;
 
+    [Header("Camp Upgrade Cutscene")]
+    [SerializeField] private Vector3           _campUpgradeCamTarget       = new(-13.6f, 6.5f, -11.83f);
+    [SerializeField] private float             _campUpgradeCamMoveDuration = 1.5f;
+    [SerializeField] private float             _campUpgradeCamWaitDuration = 3f;
+    [SerializeField] private List<GameObject>  _campUpgradeReturnObjects;
+
+    public void PlayCampUpgrade(Action onComplete)
+    {
+        StartCoroutine(CoCampUpgrade(onComplete));
+    }
+
     public void PlayMineShopOpen(PlayerController player)
     {
         StartCoroutine(CoMineShopOpen(player));
@@ -27,6 +40,30 @@ public class CutsceneController : MonoBehaviour
     public void PlayCampFull()
     {
         StartCoroutine(CoCampFull());
+    }
+
+    private IEnumerator CoCampUpgrade(Action onComplete)
+    {
+        PlayerController player = GameManager.Instance.Player;
+        if (player != null) player.SetLocked(true);
+
+        bool camReady = false;
+        _cameraController.MoveCameraXZ(_campUpgradeCamTarget, _campUpgradeCamMoveDuration, () => camReady = true);
+        yield return new WaitUntil(() => camReady);
+
+        onComplete?.Invoke();
+
+        yield return new WaitForSeconds(_campUpgradeCamWaitDuration);
+
+        bool camBack = false;
+        _cameraController.ReturnToFollow(_campUpgradeCamMoveDuration, () => camBack = true);
+        yield return new WaitUntil(() => camBack);
+
+        if (_campUpgradeReturnObjects != null)
+            foreach (var obj in _campUpgradeReturnObjects)
+                if (obj != null) obj.SetActive(true);
+
+        if (player != null) player.SetLocked(false);
     }
 
     private IEnumerator CoCampFull()
