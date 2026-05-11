@@ -22,6 +22,9 @@ public class PlayerController : BaseCharacterController
     [Header("Tray")]
     [SerializeField] private TrayController _tray;
 
+    [Header("UI")]
+    [SerializeField] private GameObject _uiMax;
+
     // ──────────────────────────────────────────────
 
     private CharacterController _controller;
@@ -84,6 +87,8 @@ public class PlayerController : BaseCharacterController
                     _starStack.transform.localPosition = count > 0
                         ? _starStackDefaultLocal + _starStackRockOffset
                         : _starStackDefaultLocal;
+                if (_uiMax != null && !_inventoryStack.IsFull)
+                    _uiMax.SetActive(false);
             };
 
         if (_tray != null)
@@ -196,8 +201,13 @@ public class PlayerController : BaseCharacterController
 
     public void OnRockMined()
     {
-        // 트레이에 아이템이 있으면 채굴 불가
         if (IsServing) return;
+
+        if (_inventoryStack != null && _inventoryStack.IsFull)
+        {
+            if (_uiMax != null) _uiMax.SetActive(true);
+            return;
+        }
 
         if (_inventoryStack != null) _inventoryStack.AddItem();
         _mineTimer = _mineClipLength;
