@@ -96,6 +96,7 @@ public class PlayerController : BaseCharacterController
     }
 
     private bool _isLocked = false;
+    public  bool IsLocked  => _isLocked;
 
     public void SetLocked(bool locked)
     {

@@ -25,11 +25,11 @@ public class CampController : MonoBehaviour
     [Header("Overflow")]
     [SerializeField] private Waypoints _overflowSpots;
 
-    [Header("Upgrade Tier Effects (index 0 = 10→20, 1 = 20→30)")]
+    [Header("Upgrade Tier Effects")]
     [SerializeField] private List<CampUpgradeTierEffect> _upgradeTiers;
 
     [Header("Settings")]
-    [SerializeField] private int _maxCapacity = 10;
+    [SerializeField] private int _maxCapacity = 12;
 
     private GuestInteraction  _doorInteraction;
     private GuestController[] _spotOccupants;
@@ -37,6 +37,9 @@ public class CampController : MonoBehaviour
     private GuestController   _lastDoorGuest;
     private bool              _fullCutsceneFired;
     private int               _upgradeIndex;
+    private Transform         _pendingWall;
+    private Vector3           _pendingWallPos;
+    private readonly List<GameObject> _persistentActivations = new List<GameObject>();
 
     private int GuestCount
     {
@@ -75,6 +78,28 @@ public class CampController : MonoBehaviour
         UpdateText();
     }
 
+    // Animator Write Defaults가 localPosition/activeSelf을 되돌리지 못하도록 LateUpdate에서 덮어씀
+    private void LateUpdate()
+    {
+        if (_pendingWall != null)
+            _pendingWall.localPosition = _pendingWallPos;
+
+        foreach (var obj in _persistentActivations)
+            if (obj != null && !obj.activeInHierarchy)
+                ActivateWithParents(obj);
+    }
+
+    private static void ActivateWithParents(GameObject obj)
+    {
+        Transform t = obj.transform.parent;
+        while (t != null)
+        {
+            if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+            t = t.parent;
+        }
+        obj.SetActive(true);
+    }
+
     private void OnDestroy()
     {
         if (_doorInteraction != null)
@@ -97,6 +122,13 @@ public class CampController : MonoBehaviour
         {
             _animator.Play(CAMP_DOOR_CLOSE);
             _lastDoorGuest = null;
+        }
+
+        // 수용량 초과 시 오버플로우로 즉시 라우팅
+        if (IsAtCapacity)
+        {
+            TryRouteToOverflow(guest);
+            return;
         }
 
         AssignSpot(guest);
@@ -137,7 +169,7 @@ public class CampController : MonoBehaviour
 
     public void Upgrade()
     {
-        int[] tiers = { 10, 20, 30 };
+        int[] tiers = { 12, 24 };
         for (int i = 0; i < tiers.Length - 1; i++)
         {
             if (_maxCapacity != tiers[i]) continue;
@@ -162,8 +194,11 @@ public class CampController : MonoBehaviour
 
     private void ApplyUpgradeTierEffect()
     {
+        Debug.Log($"[CampController] ApplyUpgradeTierEffect — tiers:{_upgradeTiers?.Count ?? -1}, index:{_upgradeIndex}");
+
         if (_upgradeTiers == null || _upgradeIndex >= _upgradeTiers.Count)
         {
+            Debug.LogWarning("[CampController] _upgradeTiers가 비어있거나 Inspector에 등록되지 않았습니다.");
             _upgradeIndex++;
             return;
         }
@@ -171,16 +206,35 @@ public class CampController : MonoBehaviour
         CampUpgradeTierEffect effect = _upgradeTiers[_upgradeIndex];
 
         if (effect.objectsToActivate != null)
+        {
             foreach (var obj in effect.objectsToActivate)
-                if (obj != null) obj.SetActive(true);
+            {
+                if (obj == null)
+                {
+                    Debug.LogWarning("[CampController] objectsToActivate에 null 항목이 있습니다. Inspector를 확인하세요.");
+                    continue;
+                }
+                ActivateWithParents(obj);
+                _persistentActivations.Add(obj);
+            }
+        }
 
         if (effect.wallToMove != null)
-            effect.wallToMove.localPosition = effect.wallTargetPos;
+        {
+            if (effect.wallToMove.TryGetComponent<Animator>(out var wallAnim))
+                wallAnim.enabled = false;
+
+            _pendingWall    = effect.wallToMove;
+            _pendingWallPos = effect.wallTargetPos;
+        }
+        else
+        {
+            Debug.LogWarning("[CampController] wallToMove가 Inspector에 연결되지 않았습니다.");
+        }
 
         if (effect.nextCampSpots != null)
         {
             _campSpots = effect.nextCampSpots;
-            // 기존 occupants 유지하면서 배열 확장
             var old = _spotOccupants;
             _spotOccupants = new GuestController[_campSpots.GetPointCount()];
             for (int i = 0; i < old.Length && i < _spotOccupants.Length; i++)

@@ -24,6 +24,14 @@ public class UI_JoystickManager : MonoBehaviour
 
     private void Update()
     {
+        PlayerController player = GameManager.Instance.Player;
+        if (player != null && player.IsLocked)
+        {
+            if (_uiJoystick.activeSelf) DeactivateJoystick();
+            CancelIdleTimer();
+            return;
+        }
+
         if (Input.touchCount > 0)
         {
             if (!_uiJoystick.activeSelf)
