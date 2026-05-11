@@ -3491,9 +3491,9 @@ MonoBehaviour:
   _flyPower: 5
   _flyDuration: 0.3
   _workerType: 0
+  _completesTutorialStep: 1
   _spawnPoints: {fileID: 59841297}
   _nextShop: {fileID: 1032945226}
-  _completesTutorialStep: 1
 --- !u!1 &290167717
 GameObject:
   m_ObjectHideFlags: 0
@@ -10140,7 +10140,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4ae49494a73ff584099f601cb159abba, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d75f8b1d41b93e048b7ee957a4099e9b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10708,8 +10708,8 @@ MonoBehaviour:
   _flyPower: 5
   _flyDuration: 0.3
   _workerType: 1
-  _spawnPoint: {fileID: 2012868605}
   _completesTutorialStep: 1
+  _spawnPoint: {fileID: 2012868605}
 --- !u!114 &1032945228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11225,7 +11225,6 @@ MonoBehaviour:
   _requiredAmount: 20
   _fillImage: {fileID: 1740417090}
   _costText: {fileID: 715747687}
-  _upgradedAmount: 50
   _flyPower: 5
   _flyDuration: 0.3
   _campController: {fileID: 1469038596}
@@ -14900,7 +14899,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 774fe8dccef69a44d9179e4529aea50c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7188dd1aa5e8d6146bd03734a6c6566c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -27026,7 +27025,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &7723813479809395022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27056,10 +27055,10 @@ MonoBehaviour:
   _requiredAmount: 20
   _fillImage: {fileID: 8526666539818185508}
   _costText: {fileID: 5191499905828562685}
-  _upgradedAmount: 50
   _flyPower: 5
   _flyDuration: 0.3
   _mineShopAnimator: {fileID: 1992912736}
+  _upgradedAmount: 50
   _completesTutorialStep: 1
 --- !u!1 &7848518942895884162
 GameObject:

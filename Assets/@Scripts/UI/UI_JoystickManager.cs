@@ -42,7 +42,9 @@ public class UI_JoystickManager : MonoBehaviour
             return;
         }
 
-        if (Input.touchCount > 0)
+        bool hasInput = Input.touchCount > 0 || Input.GetMouseButton(0);
+
+        if (hasInput)
         {
             if (!_uiJoystick.activeSelf)
                 ActivateJoystick();
