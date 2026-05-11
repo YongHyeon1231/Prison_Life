@@ -9,6 +9,9 @@ public class UI_JoystickManager : MonoBehaviour
     private const float IDLE_TIMEOUT = 10.0f;
     private Coroutine _idleCoroutine;
 
+    private static bool _isBlocked;
+    public static void SetBlocked(bool blocked) => _isBlocked = blocked;
+
     private void Start()
     {
         if (_joystickIdle == null || _uiJoystick == null)
@@ -24,6 +27,14 @@ public class UI_JoystickManager : MonoBehaviour
 
     private void Update()
     {
+        if (_isBlocked)
+        {
+            if (_uiJoystick.activeSelf) DeactivateJoystick();
+            GameManager.Instance.JoystickDir = Vector2.zero;
+            CancelIdleTimer();
+            return;
+        }
+
         PlayerController player = GameManager.Instance.Player;
         if (player != null && player.IsLocked)
         {
