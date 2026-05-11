@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using static Define;
 
-public class UI_CampCapacityUpgradeArea : UI_ConstructionArea
+public class UI_CampCapacityUpgradeArea : UI_FillProgressArea
 {
     [SerializeField] private CampController _campController;
     [SerializeField] private float          _hideDelay = 1f;
@@ -11,9 +12,10 @@ public class UI_CampCapacityUpgradeArea : UI_ConstructionArea
 
     protected override void OnComplete(PlayerController player)
     {
-        GameManager.Instance.Sound.Play(Define.SoundType.OpenAD);
+        GameManager.Instance.Sound.Play(SoundType.OpenAD);
         _campController.Upgrade();
-        if (_completesTutorialStep && TutorialGuide.Instance != null) TutorialGuide.Instance.CompleteCurrentStep();
+        if (_completesTutorialStep && TutorialGuide.Instance != null)
+            TutorialGuide.Instance.CompleteCurrentStep();
         StartCoroutine(CoHideAfterDelay());
     }
 

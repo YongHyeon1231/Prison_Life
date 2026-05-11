@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static Define;
 
 [Serializable]
 public class TutorialStep
@@ -24,9 +25,6 @@ public class TutorialGuide : MonoBehaviour
     private Animator   _arrowAnimator;
     private Vector3    _arrowTargetXZ;
 
-    private static readonly int ArrowIdle = Animator.StringToHash("Tutorial_Arrow_Idle");
-
-    // CompassArrow가 사용하는 안정적 목표 위치
     public bool    HasActiveArrow      => _arrowInstance != null && _arrowInstance.activeSelf;
     public Vector3 ArrowTargetPosition => _arrowTargetXZ;
 
@@ -98,7 +96,7 @@ public class TutorialGuide : MonoBehaviour
                 _arrowInstance.SetActive(false);
                 _arrowInstance.transform.position = step.arrowAnchor.position;
                 _arrowInstance.SetActive(true);
-                if (_arrowAnimator != null) _arrowAnimator.Play(ArrowIdle);
+                if (_arrowAnimator != null) _arrowAnimator.Play(TUTORIAL_ARROW_IDLE);
             }
         }
 

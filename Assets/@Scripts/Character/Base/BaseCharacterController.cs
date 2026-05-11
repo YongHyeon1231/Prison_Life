@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 플레이어·게스트 등 인간형 캐릭터의 공통 베이스.
-/// 이동 속도, 회전 속도, Animator 컴포넌트 참조를 통합합니다.
-/// </summary>
 [RequireComponent(typeof(Animator))]
 public abstract class BaseCharacterController : MonoBehaviour
 {

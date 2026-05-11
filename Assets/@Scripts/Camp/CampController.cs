@@ -65,8 +65,6 @@ public class CampController : MonoBehaviour
         }
     }
 
-    // ── 초기화 ────────────────────────────────────────────────────
-
     private void Start()
     {
         _animator          = GetComponent<Animator>();
@@ -78,7 +76,6 @@ public class CampController : MonoBehaviour
         UpdateText();
     }
 
-    // Animator Write Defaults가 localPosition/activeSelf을 되돌리지 못하도록 LateUpdate에서 덮어씀
     private void LateUpdate()
     {
         if (_pendingWall != null)
@@ -106,15 +103,11 @@ public class CampController : MonoBehaviour
             _doorInteraction.OnEntered -= OnGuestAtDoor;
     }
 
-    // ── 문 ───────────────────────────────────────────────────────
-
     private void OnGuestAtDoor(GuestController guest)
     {
         _lastDoorGuest = guest;
         _animator.Play(CAMP_DOOR_OPEN);
     }
-
-    // ── 바닥 (CampFloorZone이 호출) ───────────────────────────────
 
     public void OnGuestEnteredFloor(GuestController guest)
     {
@@ -124,7 +117,6 @@ public class CampController : MonoBehaviour
             _lastDoorGuest = null;
         }
 
-        // 수용량 초과 시 오버플로우로 즉시 라우팅
         if (IsAtCapacity)
         {
             TryRouteToOverflow(guest);
@@ -149,8 +141,6 @@ public class CampController : MonoBehaviour
         UpdateText();
     }
 
-    // ── 오버플로우 ────────────────────────────────────────────────
-
     public bool TryRouteToOverflow(GuestController guest)
     {
         for (int i = 0; i < _overflowOccupants.Length; i++)
@@ -164,8 +154,6 @@ public class CampController : MonoBehaviour
         }
         return false;
     }
-
-    // ── 업그레이드 ────────────────────────────────────────────────
 
     public void Upgrade()
     {
@@ -202,11 +190,8 @@ public class CampController : MonoBehaviour
 
     private void ApplyUpgradeTierEffect()
     {
-        Debug.Log($"[CampController] ApplyUpgradeTierEffect — tiers:{_upgradeTiers?.Count ?? -1}, index:{_upgradeIndex}");
-
         if (_upgradeTiers == null || _upgradeIndex >= _upgradeTiers.Count)
         {
-            Debug.LogWarning("[CampController] _upgradeTiers가 비어있거나 Inspector에 등록되지 않았습니다.");
             _upgradeIndex++;
             return;
         }
@@ -217,11 +202,7 @@ public class CampController : MonoBehaviour
         {
             foreach (var obj in effect.objectsToActivate)
             {
-                if (obj == null)
-                {
-                    Debug.LogWarning("[CampController] objectsToActivate에 null 항목이 있습니다. Inspector를 확인하세요.");
-                    continue;
-                }
+                if (obj == null) continue;
                 ActivateWithParents(obj);
                 _persistentActivations.Add(obj);
             }
@@ -235,10 +216,6 @@ public class CampController : MonoBehaviour
             _pendingWall    = effect.wallToMove;
             _pendingWallPos = effect.wallTargetPos;
         }
-        else
-        {
-            Debug.LogWarning("[CampController] wallToMove가 Inspector에 연결되지 않았습니다.");
-        }
 
         if (effect.nextCampSpots != null)
         {
@@ -251,8 +228,6 @@ public class CampController : MonoBehaviour
 
         _upgradeIndex++;
     }
-
-    // ── 자리 관리 ─────────────────────────────────────────────────
 
     private void AssignSpot(GuestController guest)
     {
@@ -273,7 +248,6 @@ public class CampController : MonoBehaviour
         }
     }
 
-    /// <summary>빈 슬롯이 생기면 뒤 게스트를 앞으로 당겨옵니다.</summary>
     private void AdvanceSpots()
     {
         for (int i = 0; i < _spotOccupants.Length; i++)
@@ -305,8 +279,6 @@ public class CampController : MonoBehaviour
             if (_spotOccupants[i] == null) return i;
         return -1;
     }
-
-    // ── UI ───────────────────────────────────────────────────────
 
     private void UpdateText()
     {

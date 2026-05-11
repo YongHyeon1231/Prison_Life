@@ -1,15 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Rock 오브젝트.
-/// Destroy 대신 SetActive(false) 후 RockPool 에 반환합니다.
-/// RockPool 이 일정 시간 뒤 원래 위치에 다시 활성화(리스폰)합니다.
-///
-/// Inspector 설정:
-///   - BoxCollider, Is Trigger = true  (플레이어가 통과 가능)
-///   - Rigidbody, Is Kinematic = true  (Trigger↔Trigger 감지에 필요)
-///   - Tag : "Rock"
-/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class Rock : MonoBehaviour
 {
@@ -20,19 +10,10 @@ public class Rock : MonoBehaviour
         rb.useGravity  = false;
     }
 
-    // ──────────────────────────────────────────────
-    //  상태
-    // ──────────────────────────────────────────────
-
-    /// <summary>채굴 가능한 상태인지 여부 (비활성 = false)</summary>
     public bool IsAvailable => gameObject.activeSelf;
 
     private int _hitCount = 0;
 
-    /// <summary>
-    /// Worker가 한 번 Mine할 때 호출합니다.
-    /// requiredHits 횟수에 도달하면 true를 반환합니다 (이때 Mine() 호출).
-    /// </summary>
     public bool TryHit(int requiredHits = 2)
     {
         if (!IsAvailable) return false;
@@ -40,17 +21,8 @@ public class Rock : MonoBehaviour
         return _hitCount >= requiredHits;
     }
 
-    /// <summary>스폰/리스폰 기준 위치 (RockPool 이 설정)</summary>
     public Vector3 OriginPosition { get; set; }
 
-    // ──────────────────────────────────────────────
-    //  채굴
-    // ──────────────────────────────────────────────
-
-    /// <summary>
-    /// WeaponCollider 에서 호출합니다.
-    /// 오브젝트를 비활성화하고 RockPool 에 반환합니다.
-    /// </summary>
     public void Mine()
     {
         if (!IsAvailable) return;
@@ -59,11 +31,6 @@ public class Rock : MonoBehaviour
         RockPool.Instance.ReturnRock(this);
     }
 
-    // ──────────────────────────────────────────────
-    //  리스폰
-    // ──────────────────────────────────────────────
-
-    /// <summary>RockPool 이 호출 — 원래 위치에 다시 활성화합니다.</summary>
     public void Respawn()
     {
         _hitCount          = 0;

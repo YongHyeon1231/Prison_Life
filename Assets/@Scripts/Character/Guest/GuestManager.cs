@@ -4,17 +4,6 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.AI;
 
-/// <summary>
-/// 게스트 스폰 · 대기열 · 서빙 · 별 보상을 통합 관리합니다.
-///
-/// Inspector 연결
-///   _guestPrefab   : GuestController 프리팹
-///   _spawnPoint    : 게스트 스폰 위치 Transform
-///   _waitPoints    : 대기 위치를 가진 Waypoints (인덱스 0이 맨 앞)
-///   _itemPlace     : Counter의 TrayToItemPlacePile
-///   _starPile      : GetStar 오브젝트의 AnimatedPile
-///   _exitDistance  : 서빙 완료 후 게스트가 앞으로 걸어갈 거리
-/// </summary>
 public class GuestManager : MonoBehaviour
 {
     [Header("Prefab")]
@@ -32,46 +21,26 @@ public class GuestManager : MonoBehaviour
     [SerializeField] private CampController _campController;
 
     [Header("Settings")]
-    [SerializeField] private float _spawnInterval    = 3f;
-    [SerializeField] private float _serveJumpPower   = 6f;
+    [SerializeField] private float _spawnInterval     = 3f;
+    [SerializeField] private float _serveJumpPower    = 6f;
     [SerializeField] private float _serveJumpDuration = 0.3f;
 
     private readonly List<GuestController> _queue = new();
     private bool _isServing = false;
 
-    // ── 초기화 ────────────────────────────────────────────────
-
     private void Start()
     {
-        if (_guestPrefab == null)
-        {
-            Debug.LogError("[GuestManager] _guestPrefab이 Inspector에 연결되지 않았습니다.");
-            return;
-        }
-        if (_spawnPoint == null)
-        {
-            Debug.LogError("[GuestManager] _spawnPoint가 Inspector에 연결되지 않았습니다.");
-            return;
-        }
-        if (_waitPoints == null)
-        {
-            Debug.LogError("[GuestManager] _waitPoints가 Inspector에 연결되지 않았습니다.");
-            return;
-        }
+        if (_guestPrefab == null || _spawnPoint == null || _waitPoints == null) return;
 
         _itemPlace.OnCountChanged += _ => TryServe();
         StartCoroutine(CoSpawnGuest());
     }
-
-    // ── Update : 큐 AI ────────────────────────────────────────
 
     private void Update()
     {
         AdvanceQueue();
         CheckFrontArrival();
     }
-
-    // ── 스폰 ──────────────────────────────────────────────────
 
     private IEnumerator CoSpawnGuest()
     {
@@ -85,16 +54,14 @@ public class GuestManager : MonoBehaviour
             Vector3 spawnPos = _spawnPoint.position;
 
             if (!NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-            {
-                Debug.LogWarning("[GuestManager] 스폰 위치 근처에 NavMesh가 없습니다.");
                 continue;
-            }
+
             spawnPos = hit.position;
 
             GuestController guest = Instantiate(_guestPrefab, spawnPos, _spawnPoint.rotation, _guestContainer);
             guest.gameObject.SetActive(true);
 
-            yield return null; // NavMeshAgent가 NavMesh에 스냅될 때까지 한 프레임 대기
+            yield return null;
 
             int backIndex = _waitPoints.GetPointCount() - 1;
             guest.CurrentQueueIndex = backIndex;
@@ -103,9 +70,6 @@ public class GuestManager : MonoBehaviour
         }
     }
 
-    // ── 큐 이동 ───────────────────────────────────────────────
-
-    /// <summary>도착한 게스트를 가능한 한 앞 칸으로 전진시킵니다.</summary>
     private void AdvanceQueue()
     {
         for (int i = 0; i < _queue.Count; i++)
@@ -119,7 +83,6 @@ public class GuestManager : MonoBehaviour
         }
     }
 
-    /// <summary>맨 앞 게스트가 index 0에 도착하면 주문을 표시합니다.</summary>
     private void CheckFrontArrival()
     {
         if (_queue.Count == 0) return;
@@ -127,13 +90,11 @@ public class GuestManager : MonoBehaviour
         GuestController front = _queue[0];
         if (!front.HasArrived) return;
         if (front.CurrentQueueIndex != 0) return;
-        if (front.RequiredCount > 0) return; // 이미 주문 표시 중
+        if (front.RequiredCount > 0) return;
 
         front.ShowOrder();
         TryServe();
     }
-
-    // ── 서빙 ──────────────────────────────────────────────────
 
     private void TryServe()
     {
@@ -168,19 +129,16 @@ public class GuestManager : MonoBehaviour
                     remaining--;
                 });
 
-            yield return new WaitForSeconds(0.08f); // 아이템 순차 이동
+            yield return new WaitForSeconds(0.08f);
         }
 
         yield return new WaitUntil(() => remaining <= 0);
 
-        // 게스트 서빙 완료
         guest.OnServed();
 
-        // 별 보상 : 받은 수량 × 7
         for (int i = 0; i < count * 7; i++)
             _starPile.AddItem();
 
-        // 큐에서 제거 후 캠프 or 오버플로우로 이동
         _queue.RemoveAt(0);
 
         if (_campController != null && _campController.IsAtCapacity)

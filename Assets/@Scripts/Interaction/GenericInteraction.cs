@@ -2,10 +2,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// 특정 타입의 캐릭터(T)가 트리거에 진입/이탈/체류할 때 이벤트를 발행하는 제네릭 베이스.
-/// PlayerInteraction, GuestInteraction 이 이를 상속합니다.
-/// </summary>
 [RequireComponent(typeof(BoxCollider))]
 public abstract class GenericInteraction<T> : MonoBehaviour where T : MonoBehaviour
 {

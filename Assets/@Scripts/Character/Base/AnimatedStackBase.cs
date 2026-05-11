@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 이동 방향에 따라 아이템 스택을 휘어지게 표현하는 공통 베이스.
-/// TrayController, PlayerInventoryStack 이 이를 상속합니다.
-/// </summary>
 public abstract class AnimatedStackBase : MonoBehaviour
 {
     [Header("Stack")]

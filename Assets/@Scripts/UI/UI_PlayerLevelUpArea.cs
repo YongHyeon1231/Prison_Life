@@ -1,10 +1,11 @@
 using UnityEngine;
 using static Define;
 
-public class UI_PlayerLevelUpArea : UI_ConstructionArea
+public class UI_PlayerLevelUpArea : UI_FillProgressArea
 {
     [Header("Level Up")]
     [SerializeField] private Animator _mineShopAnimator;
+    [SerializeField] private int      _upgradedAmount = 50;
 
     [Header("Tutorial")]
     [SerializeField] private bool _completesTutorialStep;
@@ -16,16 +17,16 @@ public class UI_PlayerLevelUpArea : UI_ConstructionArea
         if (!_isUpgraded)
         {
             _isUpgraded = true;
-
             if (_mineShopAnimator != null)
                 _mineShopAnimator.Play(MINE_SHOP_FULL_AMOUNT);
-
-            base.OnComplete(player); // 무기 업그레이드 + 필 리셋
+            player.UpgradeWeaponLevel();
+            ResetFill(_upgradedAmount);
         }
         else
         {
             player.UpgradeWeaponLevel();
-            if (_completesTutorialStep && TutorialGuide.Instance != null) TutorialGuide.Instance.CompleteCurrentStep();
+            if (_completesTutorialStep && TutorialGuide.Instance != null)
+                TutorialGuide.Instance.CompleteCurrentStep();
             gameObject.SetActive(false);
         }
     }

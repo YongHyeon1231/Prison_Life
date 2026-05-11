@@ -23,7 +23,6 @@ public class Waypoints : MonoBehaviour
 		return points;
 	}
 
-	#region Editor
 #if UNITY_EDITOR
 	[SerializeField]
 	private Color _color = Color.yellow;
@@ -46,5 +45,4 @@ public class Waypoints : MonoBehaviour
 		}
 	}
 #endif
-	#endregion
 }

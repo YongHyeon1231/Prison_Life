@@ -16,7 +16,6 @@ public class UI_JoystickManager : MonoBehaviour
     {
         if (_joystickIdle == null || _uiJoystick == null)
         {
-            Debug.LogError("[UI_JoystickManager] Inspector에서 _joystickIdle, _uiJoystick을 모두 연결해주세요.", this);
             enabled = false;
             return;
         }

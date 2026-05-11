@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Define;
 
 /// <summary>
 /// 쌓여 있는 아이템을 플레이어 트레이로 한 개씩 공급하는 스택.

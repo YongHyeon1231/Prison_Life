@@ -3,17 +3,6 @@ using UnityEngine;
 using UnityEngine.AI;
 using static Define;
 
-/// <summary>
-/// Mining Worker AI.
-/// NavMeshAgent로 _patrolA ↔ _patrolB 왕복하며 Rock을 감지하면 채굴 후
-/// PutDownTheRockPile에 직접 전달합니다.
-///
-/// 프리팹 설정:
-///   - CapsuleCollider  (Is Trigger = true)  : Rock 감지, Player 통과 허용
-///   - Rigidbody        (Is Kinematic = true) : Trigger↔Trigger 감지에 필요
-///   - NavMeshAgent                           : 이동 및 경로 탐색
-/// 씬에 MiningArea 컴포넌트가 있어야 패트롤 경로와 Pile 정보를 받습니다.
-/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class MiningWorkerController : BaseCharacterController
 {
@@ -40,17 +29,9 @@ public class MiningWorkerController : BaseCharacterController
     private void Start()
     {
         MiningArea area = InteractionManager.Instance.MiningArea;
-        if (area == null)
-        {
-            Debug.LogWarning("[MiningWorkerController] InteractionManager에 MiningArea가 설정되지 않았습니다.");
-            return;
-        }
+        if (area == null) return;
 
-        if (!area.TryGetNextLane(out _patrolA, out _patrolB))
-        {
-            Debug.LogWarning("[MiningWorkerController] MiningArea에 남은 패트롤 줄이 없습니다. Lanes 배열을 확인하세요.");
-            return;
-        }
+        if (!area.TryGetNextLane(out _patrolA, out _patrolB)) return;
 
         _targetPile = area.TargetPile;
 
@@ -89,7 +70,6 @@ public class MiningWorkerController : BaseCharacterController
         if (dir.sqrMagnitude > 0.001f)
             transform.rotation = Quaternion.LookRotation(dir);
 
-        // Rock이 채굴되거나 사라질 때까지 Mine 반복
         while (_currentRock != null && _currentRock.IsAvailable)
         {
             yield return new WaitForSeconds(_miningDuration);
@@ -103,7 +83,6 @@ public class MiningWorkerController : BaseCharacterController
                 _currentRock.Mine();
                 break;
             }
-            // 1타 완료, Rock 아직 존재 → Mine 상태 유지하며 루프 반복
         }
 
         _currentRock          = null;

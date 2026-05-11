@@ -12,18 +12,6 @@ public struct CounterWaypoint
     public float facingY;
 }
 
-/// <summary>
-/// Worker Counter AI.
-/// Spawn → WP1(Supply) → WP2(InfoDesk) → WP3(Monitor) 순환.
-///
-/// 프리팹 설정:
-///   - CapsuleCollider (Is Trigger = true)  : Player 통과 허용
-///   - Rigidbody       (Is Kinematic = true): Trigger↔Trigger 감지
-///   - NavMeshAgent
-/// 씬 설정:
-///   - Supply Stack 부모에 CounterInteraction + BoxCollider (IsTrigger)
-///   - InfoDesk_Input에  CounterInteraction + BoxCollider (IsTrigger)
-/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class WorkerCounterController : BaseCharacterController
 {
@@ -46,23 +34,20 @@ public class WorkerCounterController : BaseCharacterController
     [Header("Monitor")]
     [SerializeField] private Vector2 _idleTimeRange = new(3f, 5f);
 
-    private NavMeshAgent       _agent;
-    private ECounterState      _state;
-    private int                _lastPileCount;
-    private float              _idleTimer;
-    private float              _idleThreshold;
-    private Coroutine          _rotateCoroutine;
+    private NavMeshAgent        _agent;
+    private ECounterState       _state;
+    private int                 _lastPileCount;
+    private float               _idleTimer;
+    private float               _idleThreshold;
+    private Coroutine           _rotateCoroutine;
 
-    // 씬 배치 오브젝트 — InteractionManager에서 런타임에 주입
-    private CounterWaypoint    _wpSupply;
-    private CounterWaypoint    _wpInfoDesk;
-    private CounterWaypoint    _wpMonitor;
-    private CounterInteraction _supplyZone;
-    private CounterInteraction _infoDeskZone;
-    private SupplyStack        _supplyStack;
+    private CounterWaypoint     _wpSupply;
+    private CounterWaypoint     _wpInfoDesk;
+    private CounterWaypoint     _wpMonitor;
+    private CounterInteraction  _supplyZone;
+    private CounterInteraction  _infoDeskZone;
+    private SupplyStack         _supplyStack;
     private TrayToItemPlacePile _infoDeskPile;
-
-    // ── 초기화 ────────────────────────────────────────────────
 
     protected override void Awake()
     {
@@ -76,9 +61,9 @@ public class WorkerCounterController : BaseCharacterController
     private void Start()
     {
         InteractionManager im = InteractionManager.Instance;
-        _wpSupply    = im.CounterWpSupply;
-        _wpInfoDesk  = im.CounterWpInfoDesk;
-        _wpMonitor   = im.CounterWpMonitor;
+        _wpSupply     = im.CounterWpSupply;
+        _wpInfoDesk   = im.CounterWpInfoDesk;
+        _wpMonitor    = im.CounterWpMonitor;
         _supplyZone   = im.CounterSupplyZone;
         _infoDeskZone = im.CounterInfoDeskZone;
         _supplyStack  = im.CounterSupplyStack;
@@ -102,8 +87,6 @@ public class WorkerCounterController : BaseCharacterController
         if (_infoDeskZone != null) _infoDeskZone.OnInteraction -= HandleInfoDeskInteraction;
     }
 
-    // ── Update ────────────────────────────────────────────────
-
     private void Update()
     {
         switch (_state)
@@ -122,8 +105,6 @@ public class WorkerCounterController : BaseCharacterController
                 break;
         }
     }
-
-    // ── 이동 ──────────────────────────────────────────────────
 
     private void NavigateTo(CounterWaypoint wp, ECounterState state)
     {
@@ -161,8 +142,6 @@ public class WorkerCounterController : BaseCharacterController
         _rotateCoroutine   = null;
     }
 
-    // ── 도착 처리 ─────────────────────────────────────────────
-
     private void OnArrivedAtSupply()
     {
         FaceDirection(_wpSupply.facingY);
@@ -184,8 +163,6 @@ public class WorkerCounterController : BaseCharacterController
         SetState(ECounterState.WatchMonitor);
     }
 
-    // ── Supply 수령 ──────────────────────────────────────────
-
     private void HandleSupplyInteraction(WorkerCounterController _)
     {
         if (_state != ECounterState.ReceiveSpade) return;
@@ -200,8 +177,6 @@ public class WorkerCounterController : BaseCharacterController
             NavigateTo(_wpInfoDesk, ECounterState.GoToInfoDesk);
     }
 
-    // ── InfoDesk 쏟아내기 ─────────────────────────────────────
-
     private void HandleInfoDeskInteraction(WorkerCounterController _)
     {
         if (_state != ECounterState.DumpSpade) return;
@@ -212,8 +187,6 @@ public class WorkerCounterController : BaseCharacterController
         if (!_tray.HasItems)
             NavigateTo(_wpMonitor, ECounterState.GoToMonitor);
     }
-
-    // ── 모니터 감시 ──────────────────────────────────────────
 
     private void TickWatch()
     {
@@ -231,8 +204,6 @@ public class WorkerCounterController : BaseCharacterController
                 NavigateTo(_wpSupply, ECounterState.GoToSupply);
         }
     }
-
-    // ── 상태 / 애니메이션 ─────────────────────────────────────
 
     private void OnTrayCountChanged(int _) => UpdateAnimation();
 

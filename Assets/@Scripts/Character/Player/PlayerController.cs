@@ -25,8 +25,6 @@ public class PlayerController : BaseCharacterController
     [Header("UI")]
     [SerializeField] private GameObject _uiMax;
 
-    // ──────────────────────────────────────────────
-
     private CharacterController _controller;
     private AudioSource         _audioSource;
 
@@ -42,19 +40,16 @@ public class PlayerController : BaseCharacterController
         }
     }
 
-    // 트레이에 아이템이 하나라도 있으면 Serving 상태
     public bool IsServing => _tray != null && _tray.HasItems;
 
     public PlayerInventoryStack InventoryStack => _inventoryStack;
     public PlayerInventoryStack StarStack      => _starStack;
     public TrayController       Tray           => _tray;
 
-    private bool    _isOnWorkGround         = false;
-    private float   _mineTimer              = 0f;
-    private float   _mineClipLength         = 0.5f;
+    private bool    _isOnWorkGround = false;
+    private float   _mineTimer      = 0f;
+    private float   _mineClipLength = 0.5f;
     private Vector3 _starStackDefaultLocal;
-
-    // ──────────────────────────────────────────────
 
     protected override void Awake()
     {
@@ -115,10 +110,6 @@ public class PlayerController : BaseCharacterController
         UpdateState();
     }
 
-    // ──────────────────────────────────────────────
-    //  Movement
-    // ──────────────────────────────────────────────
-
     private void HandleMovement()
     {
         Vector3 moveDir = GetMoveDir();
@@ -141,17 +132,12 @@ public class PlayerController : BaseCharacterController
         return (Quaternion.Euler(0, 45, 0) * new Vector3(joy.x, 0, joy.y)).normalized;
     }
 
-    // ──────────────────────────────────────────────
-    //  State Machine
-    // ──────────────────────────────────────────────
-
     private void UpdateState()
     {
         _mineTimer -= Time.deltaTime;
 
         bool isMoving  = GetMoveDir() != Vector3.zero;
         bool isServing = IsServing;
-        // 트레이에 아이템이 있으면 채굴 상태 진입 불가
         bool isMining  = _isOnWorkGround && _mineTimer > 0f && !isServing;
 
         State = (isMining, isServing, isMoving) switch
@@ -178,10 +164,6 @@ public class PlayerController : BaseCharacterController
         }
     }
 
-    // ──────────────────────────────────────────────
-    //  WorkGround
-    // ──────────────────────────────────────────────
-
     public void EnterWorkGround()
     {
         _isOnWorkGround = true;
@@ -194,10 +176,6 @@ public class PlayerController : BaseCharacterController
         _mineTimer      = 0f;
         SetWeaponsActive(false);
     }
-
-    // ──────────────────────────────────────────────
-    //  Mining
-    // ──────────────────────────────────────────────
 
     public void OnRockMined()
     {
@@ -221,10 +199,6 @@ public class PlayerController : BaseCharacterController
         _state = isMoving ? EState.Move_Mine : EState.Mine;
     }
 
-    // ──────────────────────────────────────────────
-    //  Weapon Management
-    // ──────────────────────────────────────────────
-
     private void EquipWeapon(int level)
     {
         SetWeaponsActive(false);
@@ -246,10 +220,6 @@ public class PlayerController : BaseCharacterController
         if (_isOnWorkGround)
             EquipWeapon(_weaponLevel);
     }
-
-    // ──────────────────────────────────────────────
-    //  Resource
-    // ──────────────────────────────────────────────
 
     public GameObject TakeResourceItem(ResourceType type)
     {

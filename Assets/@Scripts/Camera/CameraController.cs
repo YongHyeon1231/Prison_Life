@@ -20,7 +20,6 @@ public class CameraController : MonoBehaviour
         transform.position = _offset + _target.position;
     }
 
-    /// <summary>Y축 고정, X·Z만 지정 위치로 부드럽게 이동. 자주 재사용할 수 있는 유틸리티.</summary>
     public void MoveCameraXZ(Vector3 destination, float duration, Action onComplete = null)
     {
         _isFollowing = false;
@@ -32,7 +31,6 @@ public class CameraController : MonoBehaviour
             .OnComplete(() => onComplete?.Invoke());
     }
 
-    /// <summary>플레이어 추적 위치로 복귀 후 팔로우 재개.</summary>
     public void ReturnToFollow(float duration, Action onComplete = null)
     {
         transform.DOKill();

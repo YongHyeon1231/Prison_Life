@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using static Define;
 
 public class UI_StarText : MonoBehaviour
 {
